@@ -293,7 +293,6 @@ impl<'a> ser::SerializeTupleVariant for &'a mut Serializer {
 
 #[cfg(test)]
 mod tests {
-    use serde::Serialize;
     use super::*;
 
     #[test]
@@ -319,5 +318,16 @@ mod tests {
         let serialized = to_bytes(&s).unwrap();
         assert_eq!(&serialized[..4], to_bytes(&(s.len() as u32)).unwrap());
         assert_eq!(&serialized[4..], s.as_bytes());
+    }
+
+    #[test]
+    fn test_array() {
+        let array = [0x00_u8, 0x01_u8, 0x10_u8, 0x78_u8];
+        assert_eq!(to_bytes(&array).unwrap(), array);
+
+        assert_eq!(
+            to_bytes(&[0x0010_u16, 0x0100_u16, 0x1034_u16, 0x7812_u16]).unwrap(),
+            &[0x00_u8, 0x10_u8, 0x01_u8, 0x00_u8, 0x10_u8, 0x34_u8, 0x78_u8, 0x12_u8]
+        );
     }
 }
