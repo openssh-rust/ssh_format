@@ -16,6 +16,7 @@ pub enum Error {
     InvalidStr(Utf8Error),
     Unsupported,
     SeqMustHaveLen,
+    SeqLenTooLong,
 }
 
 impl ser::Error for Error {
@@ -45,6 +46,8 @@ impl Display for Error {
             Error::Unsupported => formatter.write_str("Unsupported"),
             Error::SeqMustHaveLen =>
                 formatter.write_str("When serializing sequence, length must be provided"),
+            Error::SeqLenTooLong =>
+                formatter.write_str("Sequence length must not be larger than u32"),
         }
     }
 }
