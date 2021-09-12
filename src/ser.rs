@@ -338,4 +338,25 @@ mod tests {
             &[0x00_u8, 0x01_u8, 0x00_u8, 0x10_u8, 0x34_u8, 0x78_u8, 0x12_u8]
         );
     }
+
+    #[test]
+    fn test_struct() {
+        #[derive(Serialize)]
+        struct S {
+            v1: u8,
+            v2: u16,
+            v3: u16,
+            v4: u16,
+        }
+        let v = S {
+            v1: 0x00,
+            v2: 0x0100,
+            v3: 0x1034,
+            v4: 0x7812,
+        };
+        assert_eq!(
+            to_bytes(&v).unwrap(),
+            &[0x00_u8, 0x01_u8, 0x00_u8, 0x10_u8, 0x34_u8, 0x78_u8, 0x12_u8]
+        );
+    }
 }
