@@ -6,7 +6,7 @@ Format details:
  - All integers are encoded in big endian;
  - Boolean are encoded as `u32` according to [here][1];
  - `char` are encoded as `u32`;
- - Strings are encoded as length(`u32`) + content, same as [`sshbuf_put_string`];
+ - Strings and bytes are encoded as length(`u32`) + content, same as [`sshbuf_put_string`];
  - `Option::None` are omitted while `Option::Some(v)` has the same encoding as `v` since
    openssh mux protocol allows optional parameter at the end of the message;
  - struct/tuple are encoded as-is, unit struct/tuple are omitted;
