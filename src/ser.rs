@@ -230,18 +230,18 @@ impl<'a> ser::SerializeMap for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        unimplemented!()
+        Err(Error::Unsupported)
     }
 
     fn serialize_value<T>(&mut self, _value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
     {
-        unimplemented!()
+        Err(Error::Unsupported)
     }
 
     fn end(self) -> Result<()> {
-        unimplemented!()
+        Err(Error::Unsupported)
     }
 }
 
