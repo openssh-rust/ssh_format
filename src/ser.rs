@@ -13,8 +13,12 @@ impl Serializer {
         Self::default()
     }
 
-    pub fn get_output(self) -> Vec<u8> {
-        self.output
+    pub fn get_output(&self) -> &Vec<u8> {
+        &self.output
+    }
+
+    pub fn reset(&mut self) {
+        self.output.clear();
     }
 }
 
