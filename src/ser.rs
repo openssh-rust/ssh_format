@@ -17,6 +17,7 @@ impl Serializer {
         &self.output
     }
 
+    /// Clear the output but preserve its allocated memory
     pub fn reset(&mut self) {
         self.output.clear();
     }
@@ -52,9 +53,6 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     type SerializeStruct = Self;
     type SerializeStructVariant = Self;
 
-    // Here we go with the simple methods. The following 12 methods receive one
-    // of the primitive types of the data model and map it to JSON by appending
-    // into the output string.
     fn serialize_bool(self, v: bool) -> Result<()> {
         self.serialize_u32(v as u32)
     }
@@ -154,10 +152,12 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         self.serialize_tuple(len)
     }
 
+    /// Unsupported
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
         Err(Error::Unsupported("serialize_map"))
     }
 
+    /// Unsupported
     fn serialize_unit_variant(
         self,
         _name: &'static str,
@@ -167,6 +167,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         Err(Error::Unsupported("serialize_variant"))
     }
 
+    /// Unsupported
     fn serialize_newtype_variant<T>(
         self,
         _name: &'static str,
@@ -179,6 +180,8 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     {
         Err(Error::Unsupported("serialize_variant"))
     }
+
+    /// Unsupported
     fn serialize_tuple_variant(
         self,
         _name: &'static str,
@@ -189,6 +192,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         Err(Error::Unsupported("serialize_variant"))
     }
 
+    /// Unsupported
     fn serialize_struct_variant(
         self,
         _name: &'static str,
@@ -224,10 +228,12 @@ impl_serialize_trait!(SerializeSeq, serialize_element);
 impl_serialize_trait!(SerializeTuple, serialize_element);
 impl_serialize_trait!(SerializeTupleStruct, serialize_field);
 
+/// Unsupported
 impl<'a> ser::SerializeMap for &'a mut Serializer {
     type Ok = ();
     type Error = Error;
 
+    /// Unsupported
     fn serialize_key<T>(&mut self, _key: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
@@ -235,6 +241,7 @@ impl<'a> ser::SerializeMap for &'a mut Serializer {
         Err(Error::Unsupported("serialize_map"))
     }
 
+    /// Unsupported
     fn serialize_value<T>(&mut self, _value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
@@ -242,6 +249,7 @@ impl<'a> ser::SerializeMap for &'a mut Serializer {
         Err(Error::Unsupported("serialize_map"))
     }
 
+    /// Unsupported
     fn end(self) -> Result<()> {
         Err(Error::Unsupported("serialize_map"))
     }
@@ -263,10 +271,12 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
     }
 }
 
+/// Unsupported
 impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
     type Ok = ();
     type Error = Error;
 
+    /// Unsupported
     fn serialize_field<T>(&mut self, _key: &'static str, _value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
@@ -274,15 +284,18 @@ impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
         Err(Error::Unsupported("serialize_variant"))
     }
 
+    /// Unsupported
     fn end(self) -> Result<()> {
         Err(Error::Unsupported("serialize_variant"))
     }
 }
 
+/// Unsupported
 impl<'a> ser::SerializeTupleVariant for &'a mut Serializer {
     type Ok = ();
     type Error = Error;
 
+    /// Unsupported
     fn serialize_field<T>(&mut self, _value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
@@ -290,6 +303,7 @@ impl<'a> ser::SerializeTupleVariant for &'a mut Serializer {
         Err(Error::Unsupported("serialize_variant"))
     }
 
+    /// Unsupported
     fn end(self) -> Result<()> {
         Err(Error::Unsupported("serialize_variant"))
     }

@@ -251,10 +251,12 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         self.deserialize_tuple(fields.len(), visitor)
     }
 
+    /// Always return `false`
     fn is_human_readable(&self) -> bool {
         false
     }
 
+    /// Unsupported
     fn deserialize_enum<V>(
         self,
         _name: &'static str,
@@ -267,6 +269,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         Err(Error::Unsupported("serialize_variant"))
     }
 
+    /// Unsupported
     fn deserialize_seq<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -274,6 +277,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         Err(Error::Unsupported("deserialize_seq"))
     }
 
+    /// Unsupported
     fn deserialize_any<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -281,6 +285,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         Err(Error::Unsupported("deserialize_any"))
     }
 
+    /// Unsupported
     fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -288,6 +293,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         Err(Error::Unsupported("deserialize_option"))
     }
 
+    /// Unsupported
     fn deserialize_map<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -295,6 +301,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         Err(Error::Unsupported("deserialize_map"))
     }
 
+    /// Unsupported
     fn deserialize_identifier<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -302,6 +309,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         Err(Error::Unsupported("deserialize_identifier"))
     }
 
+    /// Unsupported
     fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -311,13 +319,16 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
 }
 
 
+/// Unsupported
 impl<'a, 'de> VariantAccess<'de> for &'a mut Deserializer<'de> {
     type Error = Error;
 
+    /// Unsupported
     fn unit_variant(self) -> Result<()> {
         Err(Error::Unsupported("serialize_variant"))
     }
 
+    /// Unsupported
     fn newtype_variant_seed<T>(self, _seed: T) -> Result<T::Value>
     where
         T: DeserializeSeed<'de>,
@@ -325,6 +336,7 @@ impl<'a, 'de> VariantAccess<'de> for &'a mut Deserializer<'de> {
         Err(Error::Unsupported("serialize_variant"))
     }
 
+    /// Unsupported
     fn tuple_variant<V>(self, _len: usize, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -332,6 +344,7 @@ impl<'a, 'de> VariantAccess<'de> for &'a mut Deserializer<'de> {
         Err(Error::Unsupported("serialize_variant"))
     }
 
+    /// Unsupported
     fn struct_variant<V>(self, _fields: &'static [&'static str], _visitor: V)
         -> Result<V::Value>
     where
