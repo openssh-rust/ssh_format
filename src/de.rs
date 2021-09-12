@@ -296,7 +296,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        Err(Error::DeserializeAnyNotSupported)
+        Err(Error::Unsupported("deserialize_any"))
     }
 
     fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value>

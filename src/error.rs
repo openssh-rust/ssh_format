@@ -10,7 +10,6 @@ pub enum Error {
     Message(String),
     TrailingBytes,
     Eof,
-    DeserializeAnyNotSupported,
     InvalidBoolEncoding,
     InvalidChar,
     InvalidStr(Utf8Error),
@@ -36,8 +35,6 @@ impl Display for Error {
             Error::Message(msg) => formatter.write_str(msg),
             Error::TrailingBytes => formatter.write_str("Trailing bytes"),
             Error::Eof => formatter.write_str("EOF"),
-            Error::DeserializeAnyNotSupported =>
-                formatter.write_str("deserialize_any is not supported"),
             Error::InvalidBoolEncoding => formatter.write_str("InvalidBoolEncoding"),
             Error::InvalidChar => formatter.write_str("Invalid char"),
             Error::InvalidStr(err) =>
