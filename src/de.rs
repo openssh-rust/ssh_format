@@ -5,7 +5,7 @@ use serde::de::{self, DeserializeSeed, SeqAccess, VariantAccess, Visitor};
 
 use crate::{Error, Result};
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Deserializer<'de> {
     input: &'de [u8],
 }
