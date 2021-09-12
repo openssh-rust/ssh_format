@@ -7,7 +7,19 @@ pub struct Serializer {
     output: Vec<u8>,
 }
 
+impl Default for Serializer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Serializer {
+    pub fn new() -> Self {
+        Self {
+            output: Vec::new(),
+        }
+    }
+
     pub fn get_output(self) -> Vec<u8> {
         self.output
     }
