@@ -340,3 +340,68 @@ impl<'a, 'de> VariantAccess<'de> for &'a mut Deserializer<'de> {
         Err(Error::Unsupported("serialize_variant"))
     }
 }
+
+/// Test deserialization
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::*;
+    use serde::{Serialize, de::DeserializeOwned};
+    use std::fmt::Debug;
+
+    /// First serialize value, then deserialize it.
+    fn test_roundtrip<T: Debug + Eq + Serialize + DeserializeOwned>(value: &T) {
+        let serialized = to_bytes(value).unwrap();
+        assert_eq!(from_bytes::<T>(&serialized).unwrap(), *value);
+    }
+
+    #[test]
+    fn test_integer() {
+        test_roundtrip(&0x12_u8);
+        test_roundtrip(&0x1234_u16);
+        test_roundtrip(&0x12345678_u32);
+        test_roundtrip(&0x1234567887654321_u64);
+    }
+
+    #[test]
+    fn test_boolean() {
+        test_roundtrip(&true);
+        test_roundtrip(&false);
+    }
+
+    #[test]
+    fn test_str() {
+        let s = "Hello, world!";
+        let serialized = to_bytes(&s).unwrap();
+        let deserialized: &str = from_bytes(&serialized).unwrap();
+        assert_eq!(deserialized, s);
+    }
+
+    #[test]
+    fn test_array() {
+        test_roundtrip(&[0x00_u8, 0x01_u8, 0x10_u8, 0x78_u8]);
+        test_roundtrip(&[0x0010_u16, 0x0100_u16, 0x1034_u16, 0x7812_u16]);
+    }
+
+    #[test]
+    fn test_tuple() {
+        test_roundtrip(&(0x00_u8, 0x0100_u16, 0x1034_u16, 0x7812_u16));
+    }
+
+    #[test]
+    fn test_struct() {
+        #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+        struct S {
+            v1: u8,
+            v2: u16,
+            v3: u16,
+            v4: u16,
+        }
+        test_roundtrip(&S {
+            v1: 0x00,
+            v2: 0x0100,
+            v3: 0x1034,
+            v4: 0x7812,
+        });
+    }
+}
