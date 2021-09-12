@@ -11,7 +11,7 @@ description = "Data format used to communicate with openssh mux server."
 repository = "https://github.com/NobodyXu/ssh_mux_format"
 
 keywords = ["serde", "ssh", "serialization", "parsing", "encoding"]
-categories = ["encoding", "asynchronous"]
+categories = ["encoding"]
 
 [dependencies]                                    
 serde = "1.0"
