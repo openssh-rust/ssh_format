@@ -2,10 +2,9 @@
 name = "ssh_mux_format"
 version = "0.1.0"
 edition = "2018"
+resolver = "2"
 
 authors = ["Jiahao XU <Jiahao_XU@outlook.com>"]
-edition = "2018"
-resolver = "2"
 
 license = "MIT"
 description = "Data format used to communicate with openssh mux server."
