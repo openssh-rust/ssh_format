@@ -295,4 +295,10 @@ mod tests {
             [0x12, 0x34, 0x56, 0x78, 0x87, 0x65, 0x43, 0x21]
         );
     }
+
+    #[test]
+    fn test_boolean() {
+        assert_eq!(to_bytes(&true).unwrap(), [0, 0, 0, 1]);
+        assert_eq!(to_bytes(&false).unwrap(), [0, 0, 0, 0]);
+    }
 }
