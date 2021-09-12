@@ -1,10 +1,7 @@
 use std::convert::TryInto;
 
 use serde::Deserialize;
-use serde::de::{
-    self, DeserializeSeed, EnumAccess, IntoDeserializer, SeqAccess,
-    VariantAccess, Visitor,
-};
+use serde::de::{self, DeserializeSeed, SeqAccess, VariantAccess, Visitor};
 
 use crate::{Error, Result};
 
@@ -254,35 +251,20 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         self.deserialize_tuple(fields.len(), visitor)
     }
 
+    fn is_human_readable(&self) -> bool {
+        false
+    }
+
     fn deserialize_enum<V>(
         self,
         _name: &'static str,
         _variants: &'static [&'static str],
-        visitor: V,
+        _visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        impl<'a, 'de> EnumAccess<'de> for &'a mut Deserializer<'de>
-        {
-            type Error = Error;
-            type Variant = Self;
-
-            fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant)>
-            where
-                V: DeserializeSeed<'de>,
-            {
-                let idx = self.next_u32()?;
-                let val: Result<_> = seed.deserialize(idx.into_deserializer());
-                Ok((val?, self))
-            }
-        }
-
-        visitor.visit_enum(self)
-    }
-
-    fn is_human_readable(&self) -> bool {
-        false
+        Err(Error::Unsupported("serialize_variant"))
     }
 
     fn deserialize_seq<V>(self, _visitor: V) -> Result<V::Value>
@@ -329,33 +311,32 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
 }
 
 
-impl<'a, 'de> VariantAccess<'de> for &'a mut Deserializer<'de>
-{
+impl<'a, 'de> VariantAccess<'de> for &'a mut Deserializer<'de> {
     type Error = Error;
 
     fn unit_variant(self) -> Result<()> {
-        Ok(())
+        Err(Error::Unsupported("serialize_variant"))
     }
 
-    fn newtype_variant_seed<T>(self, seed: T) -> Result<T::Value>
+    fn newtype_variant_seed<T>(self, _seed: T) -> Result<T::Value>
     where
         T: DeserializeSeed<'de>,
     {
-        seed.deserialize(self)
+        Err(Error::Unsupported("serialize_variant"))
     }
 
-    fn tuple_variant<V>(self, len: usize, visitor: V) -> Result<V::Value>
+    fn tuple_variant<V>(self, _len: usize, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        de::Deserializer::deserialize_tuple(self, len, visitor)
+        Err(Error::Unsupported("serialize_variant"))
     }
 
-    fn struct_variant<V>(self, fields: &'static [&'static str], visitor: V)
+    fn struct_variant<V>(self, _fields: &'static [&'static str], _visitor: V)
         -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        de::Deserializer::deserialize_tuple(self, fields.len(), visitor)
+        Err(Error::Unsupported("serialize_variant"))
     }
 }

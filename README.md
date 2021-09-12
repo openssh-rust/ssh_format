@@ -12,8 +12,8 @@ Format details:
  - struct/tuple are encoded as-is, unit struct/tuple are omitted;
  - sequence are encoded as if it is a tuple according to [here][0], thus it cannot be
    deserialized;
- - Variants are encoded as idx(`u32`) + content;
  - Serializing/Deserializing map is unsupported;
+ - Serializing/Deserializing variant is unsupported;
 
 plain format like bincode that encodes the length of string as `u32` in serde
 
