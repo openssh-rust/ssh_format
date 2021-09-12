@@ -81,7 +81,7 @@ macro_rules! impl_for_deserialize_primitive {
         where
             V: Visitor<'de>,
         {
-            visitor.$visitor_fname(<$type>::from_ne_bytes(self.next_bytes_const()?))
+            visitor.$visitor_fname(<$type>::from_be_bytes(self.next_bytes_const()?))
         }
     }
 }
@@ -129,7 +129,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        let val = u32::from_ne_bytes(self.next_bytes_const()?);
+        let val = u32::from_be_bytes(self.next_bytes_const()?);
         match char::from_u32(val) {
             Some(ch) => visitor.visit_char(ch),
             None => Err(Error::InvalidChar),
@@ -275,7 +275,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
             where
                 V: DeserializeSeed<'de>,
             {
-                let idx = u32::from_ne_bytes(self.next_bytes_const()?);
+                let idx = u32::from_be_bytes(self.next_bytes_const()?);
                 let val: Result<_> = seed.deserialize(idx.into_deserializer());
                 Ok((val?, self))
             }

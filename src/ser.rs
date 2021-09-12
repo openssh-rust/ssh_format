@@ -29,7 +29,7 @@ where
 macro_rules! impl_for_serialize_primitive {
     ( $name:ident, $type:ty ) => {
         fn $name(self, v: $type) -> Result<()> {
-            self.output.extend_from_slice(&v.to_ne_bytes());
+            self.output.extend_from_slice(&v.to_be_bytes());
             Ok(())
         }
     }
