@@ -1,6 +1,6 @@
 # ssh_mux_format
 
-Format used to communicate with openssh mux server.
+Data format used to communicate with openssh mux server.
 
 Format details:
  - All integers are encoded in big endian;
