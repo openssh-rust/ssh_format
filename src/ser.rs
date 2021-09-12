@@ -3,7 +3,7 @@ use serde::{ser, Serialize};
 
 use crate::{Error, Result};
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Serializer {
     output: Vec<u8>,
 }
