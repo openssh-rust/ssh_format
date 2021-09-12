@@ -13,7 +13,7 @@ impl Serializer {
         Self::default()
     }
 
-    pub fn get_output(&self) -> &Vec<u8> {
+    pub fn get_output(&self) -> &[u8] {
         &self.output
     }
 
