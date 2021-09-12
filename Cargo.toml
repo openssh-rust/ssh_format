@@ -3,6 +3,17 @@ name = "ssh_mux_format"
 version = "0.1.0"
 edition = "2018"
 
+authors = ["Jiahao XU <Jiahao_XU@outlook.com>"]
+edition = "2018"
+resolver = "2"
+
+license = "MIT"
+description = "Data format used to communicate with openssh mux server."
+repository = "https://github.com/NobodyXu/ssh_mux_format"
+
+keywords = ["serde", "ssh", "serialization", "parsing", "encoding"]
+categories = ["encoding", "asynchronous"]
+
 [dependencies]                                    
 serde = "1.0"
 
