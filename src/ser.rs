@@ -2,22 +2,14 @@ use serde::{ser, Serialize};
 
 use crate::{Error, Result};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Serializer {
     output: Vec<u8>,
 }
 
-impl Default for Serializer {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Serializer {
     pub fn new() -> Self {
-        Self {
-            output: Vec::new(),
-        }
+        Self::default()
     }
 
     pub fn get_output(self) -> Vec<u8> {
