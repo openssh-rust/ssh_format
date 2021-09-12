@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 use serde::{ser, Serialize};
 
 use crate::{Error, Result};
@@ -85,10 +86,13 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<()> {
-        for byte in v {
-            self.output.push(*byte);
-        }
-        self.output.push(b'\0');
+        let len: u32 = v.len()
+            .try_into()
+            .map_err(|_| Error::BytesTooLong)?;
+
+        self.serialize_u32(len)?;
+
+        self.output.extend_from_slice(v);
 
         Ok(())
     }

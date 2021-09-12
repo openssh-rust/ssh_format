@@ -64,14 +64,8 @@ impl<'de> Deserializer<'de> {
 
     /// Parse &str and &[u8]
     fn parse_bytes(&mut self) -> Result<&'de [u8]> {
-        let length = self.input
-            .iter()
-            .take_while(|byte| **byte != b'\0')
-            .count();
-
-        let bytes = self.next_bytes(length)?;
-        self.next_byte()?; // Consume the b'\0'
-        Ok(bytes)
+        let len = self.next_u32()? as usize;
+        self.next_bytes(len)
     }
 
     fn next_u32(&mut self) -> Result<u32> {
@@ -291,6 +285,13 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         false
     }
 
+    fn deserialize_seq<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::DeserializeAnyNotSupported)
+    }
+
     fn deserialize_any<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -299,13 +300,6 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     }
 
     fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value>
-    where
-        V: Visitor<'de>,
-    {
-        Err(Error::Unsupported)
-    }
-
-    fn deserialize_seq<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
