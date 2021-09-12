@@ -89,13 +89,6 @@ macro_rules! impl_for_deserialize_primitive {
 impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     type Error = Error;
 
-    fn deserialize_any<V>(self, _visitor: V) -> Result<V::Value>
-    where
-        V: Visitor<'de>,
-    {
-        Err(Error::DeserializeAnyNotSupported)
-    }
-
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -293,6 +286,13 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
 
     fn is_human_readable(&self) -> bool {
         false
+    }
+
+    fn deserialize_any<V>(self, _visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Error::DeserializeAnyNotSupported)
     }
 
     fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value>
