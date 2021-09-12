@@ -21,9 +21,7 @@ pub fn to_bytes<T>(value: &T) -> Result<Vec<u8>>
 where
     T: Serialize,
 {
-    let mut serializer = Serializer {
-        output: Vec::new(),
-    };
+    let mut serializer = Serializer::default();
     value.serialize(&mut serializer)?;
     Ok(serializer.output)
 }
