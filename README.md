@@ -26,3 +26,7 @@ Format details:
 [`sshbuf_put_string`]: https://github.com/openssh/openssh-portable/blob/2dc328023f60212cd29504fc05d849133ae47355/sshbuf-getput-basic.c#L514
 [0]: https://github.com/openssh/openssh-portable/blob/19b3d846f06697c85957ab79a63454f57f8e22d6/mux.c#L1906
 [1]: https://github.com/openssh/openssh-portable/blob/19b3d846f06697c85957ab79a63454f57f8e22d6/mux.c#L1897
+
+## Feature
+ - `is_human_readable` enables `Serializer::is_human_readable` and
+   `Deserializer::is_human_readable`.

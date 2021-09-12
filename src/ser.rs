@@ -152,6 +152,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         self.serialize_tuple(len)
     }
 
+    #[cfg(feature = "is_human_readable")]
     /// Always return false
     fn is_human_readable(&self) -> bool {
         false

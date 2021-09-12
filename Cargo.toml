@@ -13,6 +13,9 @@ repository = "https://github.com/NobodyXu/ssh_mux_format"
 keywords = ["serde", "ssh", "serialization", "parsing", "encoding"]
 categories = ["encoding"]
 
+[features]
+is_human_readable = []
+
 [dependencies]                                    
 serde = "1.0"
 

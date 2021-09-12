@@ -251,6 +251,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         self.deserialize_tuple(fields.len(), visitor)
     }
 
+    #[cfg(feature = "is_human_readable")]
     /// Always return `false`
     fn is_human_readable(&self) -> bool {
         false
