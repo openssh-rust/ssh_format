@@ -15,6 +15,7 @@ pub enum Error {
     InvalidChar,
     InvalidStr(Utf8Error),
     Unsupported,
+    BytesTooLong,
 }
 
 impl ser::Error for Error {
@@ -42,6 +43,8 @@ impl Display for Error {
             Error::InvalidStr(err) =>
                 formatter.write_fmt(format_args!("Invalid str: {:#?}", err)),
             Error::Unsupported => formatter.write_str("Unsupported"),
+            Error::BytesTooLong =>
+                formatter.write_str("Bytes must not be larger than u32::MAX"),
         }
     }
 }
