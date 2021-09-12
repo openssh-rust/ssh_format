@@ -179,7 +179,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
-        Err(Error::Unsupported)
+        Err(Error::Unsupported("serialize_map"))
     }
 
     fn serialize_struct(
@@ -234,18 +234,18 @@ impl<'a> ser::SerializeMap for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::Unsupported)
+        Err(Error::Unsupported("serialize_map"))
     }
 
     fn serialize_value<T>(&mut self, _value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::Unsupported)
+        Err(Error::Unsupported("serialize_map"))
     }
 
     fn end(self) -> Result<()> {
-        Err(Error::Unsupported)
+        Err(Error::Unsupported("serialize_map"))
     }
 }
 

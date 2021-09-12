@@ -14,7 +14,7 @@ pub enum Error {
     InvalidBoolEncoding,
     InvalidChar,
     InvalidStr(Utf8Error),
-    Unsupported,
+    Unsupported(&'static str),
     BytesTooLong,
 }
 
@@ -42,7 +42,8 @@ impl Display for Error {
             Error::InvalidChar => formatter.write_str("Invalid char"),
             Error::InvalidStr(err) =>
                 formatter.write_fmt(format_args!("Invalid str: {:#?}", err)),
-            Error::Unsupported => formatter.write_str("Unsupported"),
+            Error::Unsupported(s) =>
+                formatter.write_fmt(format_args!("Unsupported {}", s)),
             Error::BytesTooLong =>
                 formatter.write_str("Bytes must not be larger than u32::MAX"),
         }
