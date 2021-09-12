@@ -73,6 +73,10 @@ impl<'de> Deserializer<'de> {
         self.next_byte()?; // Consume the b'\0'
         Ok(bytes)
     }
+
+    fn next_u32(&mut self) -> Result<u32> {
+        Ok(u32::from_be_bytes(self.next_bytes_const()?))
+    }
 }
 
 macro_rules! impl_for_deserialize_primitive {
@@ -129,8 +133,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        let val = u32::from_be_bytes(self.next_bytes_const()?);
-        match char::from_u32(val) {
+        match char::from_u32(self.next_u32()?) {
             Some(ch) => visitor.visit_char(ch),
             None => Err(Error::InvalidChar),
         }
@@ -275,7 +278,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
             where
                 V: DeserializeSeed<'de>,
             {
-                let idx = u32::from_be_bytes(self.next_bytes_const()?);
+                let idx = self.next_u32()?;
                 let val: Result<_> = seed.deserialize(idx.into_deserializer());
                 Ok((val?, self))
             }
