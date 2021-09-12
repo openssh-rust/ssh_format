@@ -279,3 +279,20 @@ impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
         ser::SerializeStruct::end(self)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use serde::Serialize;
+    use super::*;
+
+    #[test]
+    fn test_integer() {
+        assert_eq!(to_bytes(&0x12_u8).unwrap(), [0x12]);
+        assert_eq!(to_bytes(&0x1234_u16).unwrap(), [0x12, 0x34]);
+        assert_eq!(to_bytes(&0x12345678_u32).unwrap(), [0x12, 0x34, 0x56, 0x78]);
+        assert_eq!(
+            to_bytes(&0x1234567887654321_u64).unwrap(),
+            [0x12, 0x34, 0x56, 0x78, 0x87, 0x65, 0x43, 0x21]
+        );
+    }
+}
