@@ -152,6 +152,11 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         self.serialize_tuple(len)
     }
 
+    /// Always return false
+    fn is_human_readable(&self) -> bool {
+        false
+    }
+
     /// Unsupported
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
         Err(Error::Unsupported("serialize_map"))
