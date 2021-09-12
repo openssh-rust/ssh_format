@@ -301,4 +301,12 @@ mod tests {
         assert_eq!(to_bytes(&true).unwrap(), [0, 0, 0, 1]);
         assert_eq!(to_bytes(&false).unwrap(), [0, 0, 0, 0]);
     }
+
+    #[test]
+    fn test_str() {
+        let s = "Hello, world!";
+        let serialized = to_bytes(&s).unwrap();
+        assert_eq!(&serialized[..4], to_bytes(&(s.len() as u32)).unwrap());
+        assert_eq!(&serialized[4..], s.as_bytes());
+    }
 }
