@@ -52,8 +52,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     // of the primitive types of the data model and map it to JSON by appending
     // into the output string.
     fn serialize_bool(self, v: bool) -> Result<()> {
-        self.output.push(v as u8);
-        Ok(())
+        self.serialize_u32(v as u32)
     }
 
     fn serialize_u8(self, v: u8) -> Result<()> {

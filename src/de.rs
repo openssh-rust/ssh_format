@@ -91,7 +91,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        match self.next_byte()? {
+        match self.next_u32()? {
             1 => visitor.visit_bool(true),
             0 => visitor.visit_bool(false),
             _ => Err(Error::InvalidBoolEncoding),

@@ -1,2 +1,3 @@
-# c_plain_format
-plain format like bincode that encodes string as zero-terminated strings in serde
+# ssh_mux_format
+
+plain format like bincode that encodes the length of string as `u32` in serde
