@@ -1,5 +1,13 @@
 # ssh_mux_format
 
+[![Rust](https://github.com/NobodyXu/concurrency_toolkit/actions/workflows/rust.yml/badge.svg)](https://github.com/NobodyXu/concurrency_toolkit/actions/workflows/rust.yml)
+
+[![crate.io downloads](https://img.shields.io/crates/d/ssh_mux_format)](https://crates.io/crates/ssh_mux_format)
+
+[![crate.io version](https://img.shields.io/crates/v/ssh_mux_format)](https://crates.io/crates/ssh_mux_format)
+
+[![docs](https://docs.rs/ssh_mux_format/badge.svg)](https://docs.rs/ssh_mux_format)
+
 Data format used to communicate with openssh mux server.
 
 Format details:
