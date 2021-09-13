@@ -1,8 +1,6 @@
 use std::convert::TryInto;
 
-use serde::de::{
-    self, DeserializeSeed, SeqAccess, VariantAccess, IntoDeserializer, Visitor
-};
+use serde::de::{self, DeserializeSeed, IntoDeserializer, SeqAccess, VariantAccess, Visitor};
 use serde::Deserialize;
 
 use crate::{Error, Result};
@@ -254,8 +252,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        impl<'a, 'de> serde::de::EnumAccess<'de> for &'a mut Deserializer<'de>
-        {
+        impl<'a, 'de> serde::de::EnumAccess<'de> for &'a mut Deserializer<'de> {
             type Error = Error;
             type Variant = Self;
 
