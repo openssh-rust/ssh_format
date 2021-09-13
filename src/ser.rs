@@ -160,6 +160,52 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         self.serialize_tuple(len)
     }
 
+    fn serialize_unit_variant(
+        self,
+        _name: &'static str,
+        variant_index: u32,
+        _variant: &'static str,
+    ) -> Result<()> {
+        self.serialize_u32(variant_index)
+    }
+
+    fn serialize_newtype_variant<T>(
+        self,
+        name: &'static str,
+        variant_index: u32,
+        variant: &'static str,
+        value: &T,
+    ) -> Result<()>
+    where
+        T: ?Sized + Serialize,
+    {
+        self.serialize_unit_variant(name, variant_index, variant)?;
+        value.serialize(self)
+    }
+
+    fn serialize_tuple_variant(
+        self,
+        name: &'static str,
+        variant_index: u32,
+        variant: &'static str,
+        len: usize,
+    ) -> Result<Self::SerializeTupleVariant> {
+        self.serialize_unit_variant(name, variant_index, variant)?;
+        self.serialize_tuple(len)
+    }
+
+    /// Unsupported
+    fn serialize_struct_variant(
+        self,
+        name: &'static str,
+        variant_index: u32,
+        variant: &'static str,
+        len: usize,
+    ) -> Result<Self::SerializeStructVariant> {
+        self.serialize_unit_variant(name, variant_index, variant)?;
+        self.serialize_tuple(len)
+    }
+
     #[cfg(feature = "is_human_readable")]
     /// Always return false
     fn is_human_readable(&self) -> bool {
@@ -169,52 +215,6 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     /// Unsupported
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
         Err(Error::Unsupported("serialize_map"))
-    }
-
-    /// Unsupported
-    fn serialize_unit_variant(
-        self,
-        _name: &'static str,
-        _variant_index: u32,
-        _variant: &'static str,
-    ) -> Result<()> {
-        Err(Error::Unsupported("serialize_variant"))
-    }
-
-    /// Unsupported
-    fn serialize_newtype_variant<T>(
-        self,
-        _name: &'static str,
-        _variant_index: u32,
-        _variant: &'static str,
-        _value: &T,
-    ) -> Result<()>
-    where
-        T: ?Sized + Serialize,
-    {
-        Err(Error::Unsupported("serialize_variant"))
-    }
-
-    /// Unsupported
-    fn serialize_tuple_variant(
-        self,
-        _name: &'static str,
-        _variant_index: u32,
-        _variant: &'static str,
-        _len: usize,
-    ) -> Result<Self::SerializeTupleVariant> {
-        Err(Error::Unsupported("serialize_variant"))
-    }
-
-    /// Unsupported
-    fn serialize_struct_variant(
-        self,
-        _name: &'static str,
-        _variant_index: u32,
-        _variant: &'static str,
-        _len: usize,
-    ) -> Result<Self::SerializeStructVariant> {
-        Err(Error::Unsupported("serialize_variant"))
     }
 }
 
@@ -241,6 +241,7 @@ macro_rules! impl_serialize_trait {
 impl_serialize_trait!(SerializeSeq, serialize_element);
 impl_serialize_trait!(SerializeTuple, serialize_element);
 impl_serialize_trait!(SerializeTupleStruct, serialize_field);
+impl_serialize_trait!(SerializeTupleVariant, serialize_field);
 
 /// Unsupported
 impl<'a> ser::SerializeMap for &'a mut Serializer {
@@ -284,48 +285,28 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
         Ok(())
     }
 }
-
-/// Unsupported
 impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
     type Ok = ();
     type Error = Error;
 
-    /// Unsupported
-    fn serialize_field<T>(&mut self, _key: &'static str, _value: &T) -> Result<()>
+    fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::Unsupported("serialize_variant"))
+        ser::SerializeStruct::serialize_field(self, key, value)
     }
 
-    /// Unsupported
     fn end(self) -> Result<()> {
-        Err(Error::Unsupported("serialize_variant"))
-    }
-}
-
-/// Unsupported
-impl<'a> ser::SerializeTupleVariant for &'a mut Serializer {
-    type Ok = ();
-    type Error = Error;
-
-    /// Unsupported
-    fn serialize_field<T>(&mut self, _value: &T) -> Result<()>
-    where
-        T: ?Sized + Serialize,
-    {
-        Err(Error::Unsupported("serialize_variant"))
-    }
-
-    /// Unsupported
-    fn end(self) -> Result<()> {
-        Err(Error::Unsupported("serialize_variant"))
+        ser::SerializeStruct::end(self)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde::ser;
+
+    type SerializerToTest = Serializer;
 
     #[test]
     fn test_integer() {
@@ -396,6 +377,23 @@ mod tests {
         assert_eq!(
             to_bytes(&v).unwrap(),
             &[0, 0, 0, 7, 0x00_u8, 0x01_u8, 0x00_u8, 0x10_u8, 0x34_u8, 0x78_u8, 0x12_u8]
+        );
+    }
+
+    #[test]
+    fn test_enum() {
+        use ser::Serializer;
+
+        let mut serializer = SerializerToTest::new();
+
+        serializer.serialize_unit_variant("", 1, "").unwrap();
+        assert_eq!(serializer.get_output().unwrap(), [0, 0, 0, 4, 0, 0, 0, 1]);
+
+        serializer.reset();
+        serializer.serialize_newtype_variant("", 0, "", &3).unwrap();
+        assert_eq!(
+            serializer.get_output().unwrap(),
+            [0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 3]
         );
     }
 }

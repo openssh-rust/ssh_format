@@ -1,6 +1,8 @@
 use std::convert::TryInto;
 
-use serde::de::{self, DeserializeSeed, SeqAccess, VariantAccess, Visitor};
+use serde::de::{
+    self, DeserializeSeed, SeqAccess, VariantAccess, IntoDeserializer, Visitor
+};
 use serde::Deserialize;
 
 use crate::{Error, Result};
@@ -243,23 +245,37 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         self.deserialize_tuple(fields.len(), visitor)
     }
 
-    #[cfg(feature = "is_human_readable")]
-    /// Always return `false`
-    fn is_human_readable(&self) -> bool {
-        false
-    }
-
-    /// Unsupported
     fn deserialize_enum<V>(
         self,
         _name: &'static str,
         _variants: &'static [&'static str],
-        _visitor: V,
+        visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::Unsupported("serialize_variant"))
+        impl<'a, 'de> serde::de::EnumAccess<'de> for &'a mut Deserializer<'de>
+        {
+            type Error = Error;
+            type Variant = Self;
+
+            fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant)>
+            where
+                V: de::DeserializeSeed<'de>,
+            {
+                let idx: u32 = self.next_u32()?;
+                let val: Result<_> = seed.deserialize(idx.into_deserializer());
+                Ok((val?, self))
+            }
+        }
+
+        visitor.visit_enum(self)
+    }
+
+    #[cfg(feature = "is_human_readable")]
+    /// Always return `false`
+    fn is_human_readable(&self) -> bool {
+        false
     }
 
     /// Unsupported

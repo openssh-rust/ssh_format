@@ -10,8 +10,10 @@
 //!  - struct/tuple are encoded as-is, unit struct/tuple are omitted;
 //!  - sequence are encoded as if it is a tuple according to [here][0], thus it cannot be
 //!    deserialized;
+//!  - Variant is encoded as index(`u32`) + content encoded as-is (it is expected to
+//!    manually implement `Serialize` and `Deserialize` to ensure the `variant_index`
+//!    is the one you expected);
 //!  - Serializing/Deserializing map is unsupported;
-//!  - Serializing/Deserializing variant is unsupported;
 //!
 //! [`sshbuf_put_string`]: https://github.com/openssh/openssh-portable/blob/2dc328023f60212cd29504fc05d849133ae47355/sshbuf-getput-basic.c#L514
 //! [0]: https://github.com/openssh/openssh-portable/blob/19b3d846f06697c85957ab79a63454f57f8e22d6/mux.c#L1906
