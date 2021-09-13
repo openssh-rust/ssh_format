@@ -16,3 +16,6 @@ jobs:
       run: |
         cargo test
         cargo test --all-features
+        cargo check
+        cargo fmt --all -- --check
+        cargo clippy
