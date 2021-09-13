@@ -41,12 +41,16 @@ impl<'de> Deserializer<'de> {
     }
 
     fn next_bytes_const<const SIZE: usize>(&mut self) -> Result<[u8; SIZE]> {
-        let bytes: [u8; SIZE] = 
-            self.input[..SIZE]
-                .try_into()
-                .map_err(|_| Error::Eof)?;
-        self.input = &self.input[SIZE..];
-        Ok(bytes)
+        if self.input.len() < SIZE {
+            Err(Error::Eof)
+        } else {
+            let bytes: [u8; SIZE] = 
+                self.input[..SIZE]
+                    .try_into()
+                    .map_err(|_| Error::Eof)?;
+            self.input = &self.input[SIZE..];
+            Ok(bytes)
+        }
     }
 
     fn next_bytes(&mut self, size: usize) -> Result<&'de [u8]> {
