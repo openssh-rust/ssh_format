@@ -37,6 +37,8 @@ impl Serializer {
     }
 }
 
+/// Return a byte array with the first 4 bytes representing the size
+/// of the rest of the serialized message.
 pub fn to_bytes<T>(value: &T) -> Result<Vec<u8>>
 where
     T: Serialize,
