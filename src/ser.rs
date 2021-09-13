@@ -3,23 +3,37 @@ use serde::{ser, Serialize};
 
 use crate::{Error, Result};
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct Serializer {
     output: Vec<u8>,
 }
 
+impl Default for Serializer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Serializer {
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            output: [0, 0, 0, 0].into()
+        }
     }
 
-    pub fn get_output(&self) -> &[u8] {
-        &self.output
+    /// Return a byte array with the first 4 bytes representing the size
+    /// of the rest of the serialized message.
+    pub fn get_output(&mut self) -> Result<&[u8]> {
+        let len: u32 = (self.output.len() - 4)
+            .try_into()
+            .map_err(|_| Error::BytesTooLong)?;
+        self.output[..4].copy_from_slice(&len.to_be_bytes());
+        Ok(&self.output)
     }
 
     /// Clear the output but preserve its allocated memory
     pub fn reset(&mut self) {
-        self.output.clear();
+        self.output.truncate(4);
     }
 }
 
@@ -29,6 +43,8 @@ where
 {
     let mut serializer = Serializer::default();
     value.serialize(&mut serializer)?;
+    // Fill the first 4 bytes with the size
+    serializer.get_output()?;
     Ok(serializer.output)
 }
 
@@ -321,37 +337,44 @@ mod tests {
 
     #[test]
     fn test_integer() {
-        assert_eq!(to_bytes(&0x12_u8).unwrap(), [0x12]);
-        assert_eq!(to_bytes(&0x1234_u16).unwrap(), [0x12, 0x34]);
-        assert_eq!(to_bytes(&0x12345678_u32).unwrap(), [0x12, 0x34, 0x56, 0x78]);
+        assert_eq!(to_bytes(&0x12_u8).unwrap(), [0, 0, 0, 1, 0x12]);
+        assert_eq!(to_bytes(&0x1234_u16).unwrap(), [0, 0, 0, 2, 0x12, 0x34]);
+        assert_eq!(
+            to_bytes(&0x12345678_u32).unwrap(),
+            [0, 0, 0, 4, 0x12, 0x34, 0x56, 0x78]
+        );
         assert_eq!(
             to_bytes(&0x1234567887654321_u64).unwrap(),
-            [0x12, 0x34, 0x56, 0x78, 0x87, 0x65, 0x43, 0x21]
+            [0, 0, 0, 8, 0x12, 0x34, 0x56, 0x78, 0x87, 0x65, 0x43, 0x21]
         );
     }
 
     #[test]
     fn test_boolean() {
-        assert_eq!(to_bytes(&true).unwrap(), [0, 0, 0, 1]);
-        assert_eq!(to_bytes(&false).unwrap(), [0, 0, 0, 0]);
+        assert_eq!(to_bytes(&true).unwrap(), [0, 0, 0, 4, 0, 0, 0, 1]);
+        assert_eq!(to_bytes(&false).unwrap(), [0, 0, 0, 4, 0, 0, 0, 0]);
     }
 
     #[test]
     fn test_str() {
         let s = "Hello, world!";
         let serialized = to_bytes(&s).unwrap();
-        assert_eq!(&serialized[..4], to_bytes(&(s.len() as u32)).unwrap());
-        assert_eq!(&serialized[4..], s.as_bytes());
+        let len: u32 = (serialized.len() - 4).try_into().unwrap();
+        assert_eq!(&serialized[..4], len.to_be_bytes());
+        assert_eq!(&serialized[4..8], (s.len() as u32).to_be_bytes());
+        assert_eq!(&serialized[8..], s.as_bytes());
     }
 
     #[test]
     fn test_array() {
         let array = [0x00_u8, 0x01_u8, 0x10_u8, 0x78_u8];
-        assert_eq!(to_bytes(&array).unwrap(), array);
+        let serialized = to_bytes(&array).unwrap();
+        assert_eq!(serialized[..4], [0, 0, 0, 4]);
+        assert_eq!(serialized[4..], array);
 
         assert_eq!(
             to_bytes(&[0x0010_u16, 0x0100_u16, 0x1034_u16, 0x7812_u16]).unwrap(),
-            &[0x00_u8, 0x10_u8, 0x01_u8, 0x00_u8, 0x10_u8, 0x34_u8, 0x78_u8, 0x12_u8]
+            &[0, 0, 0, 8, 0x00, 0x10, 0x01, 0x00, 0x10, 0x34, 0x78, 0x12_u8]
         );
     }
 
@@ -359,7 +382,7 @@ mod tests {
     fn test_tuple() {
         assert_eq!(
             to_bytes(&(0x00_u8, 0x0100_u16, 0x1034_u16, 0x7812_u16)).unwrap(),
-            &[0x00_u8, 0x01_u8, 0x00_u8, 0x10_u8, 0x34_u8, 0x78_u8, 0x12_u8]
+            &[0, 0, 0, 7, 0x00_u8, 0x01_u8, 0x00_u8, 0x10_u8, 0x34_u8, 0x78_u8, 0x12_u8]
         );
     }
 
@@ -380,7 +403,7 @@ mod tests {
         };
         assert_eq!(
             to_bytes(&v).unwrap(),
-            &[0x00_u8, 0x01_u8, 0x00_u8, 0x10_u8, 0x34_u8, 0x78_u8, 0x12_u8]
+            &[0, 0, 0, 7, 0x00_u8, 0x01_u8, 0x00_u8, 0x10_u8, 0x34_u8, 0x78_u8, 0x12_u8]
         );
     }
 }

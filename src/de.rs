@@ -370,7 +370,8 @@ mod tests {
     /// First serialize value, then deserialize it.
     fn test_roundtrip<T: Debug + Eq + Serialize + DeserializeOwned>(value: &T) {
         let serialized = to_bytes(value).unwrap();
-        assert_eq!(from_bytes::<T>(&serialized).unwrap(), *value);
+        // Ignore the size
+        assert_eq!(from_bytes::<T>(&serialized[4..]).unwrap(), *value);
     }
 
     #[test]
@@ -391,7 +392,8 @@ mod tests {
     fn test_str() {
         let s = "Hello, world!";
         let serialized = to_bytes(&s).unwrap();
-        let deserialized: &str = from_bytes(&serialized).unwrap();
+        // Ignore the size
+        let deserialized: &str = from_bytes(&serialized[4..]).unwrap();
         assert_eq!(deserialized, s);
     }
 
