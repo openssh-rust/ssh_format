@@ -54,7 +54,7 @@ impl<'de> Deserializer<'de> {
     }
 
     fn next_bytes(&mut self, size: usize) -> Result<&'de [u8]> {
-        if self.input.len() > size {
+        if self.input.len() < size {
             Err(Error::Eof)
         } else {
             let bytes = &self.input[..size];
