@@ -324,37 +324,32 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     }
 }
 
-/// Unsupported
 impl<'a, 'de> VariantAccess<'de> for &'a mut Deserializer<'de> {
     type Error = Error;
 
-    /// Unsupported
     fn unit_variant(self) -> Result<()> {
-        Err(Error::Unsupported("serialize_variant"))
+        Ok(())
     }
 
-    /// Unsupported
-    fn newtype_variant_seed<T>(self, _seed: T) -> Result<T::Value>
+    fn newtype_variant_seed<T>(self, seed: T) -> Result<T::Value>
     where
         T: DeserializeSeed<'de>,
     {
-        Err(Error::Unsupported("serialize_variant"))
+        DeserializeSeed::deserialize(seed, self)
     }
 
-    /// Unsupported
-    fn tuple_variant<V>(self, _len: usize, _visitor: V) -> Result<V::Value>
+    fn tuple_variant<V>(self, len: usize, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::Unsupported("serialize_variant"))
+        de::Deserializer::deserialize_tuple(self, len, visitor)
     }
 
-    /// Unsupported
-    fn struct_variant<V>(self, _fields: &'static [&'static str], _visitor: V) -> Result<V::Value>
+    fn struct_variant<V>(self, fields: &'static [&'static str], visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::Unsupported("serialize_variant"))
+        de::Deserializer::deserialize_tuple(self, fields.len(), visitor)
     }
 }
 
