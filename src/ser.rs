@@ -1,5 +1,5 @@
-use std::convert::TryInto;
 use serde::{ser, Serialize};
+use std::convert::TryInto;
 
 use crate::{Error, Result};
 
@@ -17,7 +17,7 @@ impl Default for Serializer {
 impl Serializer {
     pub fn new() -> Self {
         Self {
-            output: [0, 0, 0, 0].into()
+            output: [0, 0, 0, 0].into(),
         }
     }
 
@@ -54,7 +54,7 @@ macro_rules! impl_for_serialize_primitive {
             self.output.extend_from_slice(&v.to_be_bytes());
             Ok(())
         }
-    }
+    };
 }
 
 impl<'a> ser::Serializer for &'a mut Serializer {
@@ -103,9 +103,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<()> {
-        let len: u32 = v.len()
-            .try_into()
-            .map_err(|_| Error::BytesTooLong)?;
+        let len: u32 = v.len().try_into().map_err(|_| Error::BytesTooLong)?;
 
         self.serialize_u32(len)?;
 
@@ -133,11 +131,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         self.serialize_unit()
     }
 
-    fn serialize_newtype_struct<T>(
-        self,
-        _name: &'static str,
-        value: &T,
-    ) -> Result<()>
+    fn serialize_newtype_struct<T>(self, _name: &'static str, value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
     {
@@ -160,11 +154,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         self.serialize_tuple(len)
     }
 
-    fn serialize_struct(
-        self,
-        _name: &'static str,
-        len: usize,
-    ) -> Result<Self::SerializeStruct> {
+    fn serialize_struct(self, _name: &'static str, len: usize) -> Result<Self::SerializeStruct> {
         self.serialize_tuple(len)
     }
 
@@ -231,19 +221,19 @@ macro_rules! impl_serialize_trait {
         impl<'a> ser::$name for &'a mut Serializer {
             type Ok = ();
             type Error = Error;
-        
+
             fn $function_name<T>(&mut self, value: &T) -> Result<()>
             where
                 T: ?Sized + Serialize,
             {
                 value.serialize(&mut **self)
             }
-        
+
             fn end(self) -> Result<()> {
                 Ok(())
             }
         }
-    }
+    };
 }
 
 impl_serialize_trait!(SerializeSeq, serialize_element);

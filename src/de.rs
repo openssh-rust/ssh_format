@@ -1,7 +1,7 @@
 use std::convert::TryInto;
 
-use serde::Deserialize;
 use serde::de::{self, DeserializeSeed, SeqAccess, VariantAccess, Visitor};
+use serde::Deserialize;
 
 use crate::{Error, Result};
 
@@ -44,10 +44,7 @@ impl<'de> Deserializer<'de> {
         if self.input.len() < SIZE {
             Err(Error::Eof)
         } else {
-            let bytes: [u8; SIZE] = 
-                self.input[..SIZE]
-                    .try_into()
-                    .map_err(|_| Error::Eof)?;
+            let bytes: [u8; SIZE] = self.input[..SIZE].try_into().map_err(|_| Error::Eof)?;
             self.input = &self.input[SIZE..];
             Ok(bytes)
         }
@@ -82,7 +79,7 @@ macro_rules! impl_for_deserialize_primitive {
         {
             visitor.$visitor_fname(<$type>::from_be_bytes(self.next_bytes_const()?))
         }
-    }
+    };
 }
 
 impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
@@ -172,22 +169,14 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         visitor.visit_unit()
     }
 
-    fn deserialize_unit_struct<V>(
-        self,
-        _name: &'static str,
-        visitor: V,
-    ) -> Result<V::Value>
+    fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
         self.deserialize_unit(visitor)
     }
 
-    fn deserialize_newtype_struct<V>(
-        self,
-        _name: &'static str,
-        visitor: V,
-    ) -> Result<V::Value>
+    fn deserialize_newtype_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -203,8 +192,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
             len: usize,
         }
 
-        impl<'a, 'de> SeqAccess<'de> for Access<'a, 'de>
-        {
+        impl<'a, 'de> SeqAccess<'de> for Access<'a, 'de> {
             type Error = Error;
 
             fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>>
@@ -323,7 +311,6 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     }
 }
 
-
 /// Unsupported
 impl<'a, 'de> VariantAccess<'de> for &'a mut Deserializer<'de> {
     type Error = Error;
@@ -350,8 +337,7 @@ impl<'a, 'de> VariantAccess<'de> for &'a mut Deserializer<'de> {
     }
 
     /// Unsupported
-    fn struct_variant<V>(self, _fields: &'static [&'static str], _visitor: V)
-        -> Result<V::Value>
+    fn struct_variant<V>(self, _fields: &'static [&'static str], _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -364,9 +350,9 @@ impl<'a, 'de> VariantAccess<'de> for &'a mut Deserializer<'de> {
 mod tests {
     use super::*;
     use crate::*;
-    use serde::{Serialize, de::DeserializeOwned};
-    use std::fmt::Debug;
     use assert_matches::assert_matches;
+    use serde::{de::DeserializeOwned, Serialize};
+    use std::fmt::Debug;
 
     /// First serialize value, then deserialize it.
     fn test_roundtrip<T: Debug + Eq + Serialize + DeserializeOwned>(value: &T) {

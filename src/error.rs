@@ -37,12 +37,9 @@ impl Display for Error {
             Error::Eof => formatter.write_str("EOF"),
             Error::InvalidBoolEncoding => formatter.write_str("InvalidBoolEncoding"),
             Error::InvalidChar => formatter.write_str("Invalid char"),
-            Error::InvalidStr(err) =>
-                formatter.write_fmt(format_args!("Invalid str: {:#?}", err)),
-            Error::Unsupported(s) =>
-                formatter.write_fmt(format_args!("Unsupported {}", s)),
-            Error::BytesTooLong =>
-                formatter.write_str("Bytes must not be larger than u32::MAX"),
+            Error::InvalidStr(err) => formatter.write_fmt(format_args!("Invalid str: {:#?}", err)),
+            Error::Unsupported(s) => formatter.write_fmt(format_args!("Unsupported {}", s)),
+            Error::BytesTooLong => formatter.write_str("Bytes must not be larger than u32::MAX"),
         }
     }
 }
