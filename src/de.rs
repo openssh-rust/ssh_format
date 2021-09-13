@@ -366,6 +366,7 @@ mod tests {
     use crate::*;
     use serde::{Serialize, de::DeserializeOwned};
     use std::fmt::Debug;
+    use assert_matches::assert_matches;
 
     /// First serialize value, then deserialize it.
     fn test_roundtrip<T: Debug + Eq + Serialize + DeserializeOwned>(value: &T) {
@@ -423,5 +424,18 @@ mod tests {
             v3: 0x1034,
             v4: 0x7812,
         });
+    }
+
+    /// Test EOF error
+    #[test]
+    fn test_eof_error() {
+        assert_matches!(from_bytes::<u8>(&[]), Err(Error::Eof));
+
+        let s = "Hello, world!";
+        let serialized = to_bytes(&s).unwrap();
+        assert_matches!(
+            from_bytes::<String>(&serialized[0..serialized.len() - 1]),
+            Err(Error::Eof)
+        );
     }
 }
