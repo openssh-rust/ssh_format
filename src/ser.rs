@@ -194,7 +194,6 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         self.serialize_tuple(len)
     }
 
-    /// Unsupported
     fn serialize_struct_variant(
         self,
         name: &'static str,
