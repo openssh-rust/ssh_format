@@ -16,15 +16,32 @@ impl<'de> Deserializer<'de> {
     }
 }
 
-/// Usage:
+/// # Example
 ///
-/// ```
+/// Simple Usage:
+///
+/// ```ignore
 /// let serialized = to_bytes(value).unwrap();
 /// // Ignore the size
 /// let new_value = from_bytes::<T>(&serialized[4..]).unwrap();
 /// 
 /// assert_eq!(value, new_value);
 /// ```
+///
+/// Replace `T` with type of `value`.
+///
+/// More complicated one (sending over socket):
+///
+/// ```ignore
+/// let buffer = // read in 4 bytes;
+/// let size: u32 = from_bytes(&buffer).unwrap();
+///
+/// let buffer = // read in `size` bytes;
+/// let val: <T> = from_bytes(&buffer).unwrap();
+/// ```
+///
+/// Replace `T` with your own type.
+///
 pub fn from_bytes<'a, T>(s: &'a [u8]) -> Result<T>
 where
     T: Deserialize<'a>,
