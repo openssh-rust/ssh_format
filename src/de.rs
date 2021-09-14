@@ -24,7 +24,7 @@ impl<'de> Deserializer<'de> {
 /// let serialized = to_bytes(value).unwrap();
 /// // Ignore the size
 /// let new_value = from_bytes::<T>(&serialized[4..]).unwrap();
-/// 
+///
 /// assert_eq!(value, new_value);
 /// ```
 ///
