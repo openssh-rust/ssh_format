@@ -1,5 +1,5 @@
 [package]
-name = "ssh_mux_format"
+name = "ssh_format"
 version = "0.4.7"
 edition = "2018"
 
