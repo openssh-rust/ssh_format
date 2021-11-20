@@ -22,6 +22,8 @@
 //!  - `is_human_readable` enables `Serializer::is_human_readable` and
 //!    `Deserializer::is_human_readable`.
 
+#![forbid(unsafe_code)]
+
 mod de;
 mod error;
 mod ser;
