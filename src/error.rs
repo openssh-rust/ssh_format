@@ -8,7 +8,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Clone, Debug, PartialEq)]
 pub enum Error {
     Message(String),
-    TrailingBytes,
     Eof,
     InvalidBoolEncoding,
     InvalidChar,
@@ -33,7 +32,6 @@ impl Display for Error {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Error::Message(msg) => formatter.write_str(msg),
-            Error::TrailingBytes => formatter.write_str("Trailing bytes"),
             Error::Eof => formatter.write_str("EOF"),
             Error::InvalidBoolEncoding => formatter.write_str("InvalidBoolEncoding"),
             Error::InvalidChar => formatter.write_str("Invalid char"),

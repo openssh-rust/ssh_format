@@ -16,6 +16,8 @@ impl<'de> Deserializer<'de> {
     }
 }
 
+/// Return a deserialized value and trailing bytes.
+///
 /// # Example
 ///
 /// Simple Usage:
@@ -23,7 +25,7 @@ impl<'de> Deserializer<'de> {
 /// ```ignore
 /// let serialized = to_bytes(value).unwrap();
 /// // Ignore the size
-/// let new_value = from_bytes::<T>(&serialized[4..]).unwrap();
+/// let (new_value, _trailing_bytes) = from_bytes::<T>(&serialized[4..]).unwrap();
 ///
 /// assert_eq!(value, new_value);
 /// ```
@@ -34,25 +36,20 @@ impl<'de> Deserializer<'de> {
 ///
 /// ```ignore
 /// let buffer = // read in 4 bytes;
-/// let size: u32 = from_bytes(&buffer).unwrap();
+/// let (size: u32, _trailing_bytes0 = from_bytes(&buffer).unwrap();
 ///
 /// let buffer = // read in `size` bytes;
-/// let val: <T> = from_bytes(&buffer).unwrap();
+/// let (val: <T>, _trailing_bytes) = from_bytes(&buffer).unwrap();
 /// ```
 ///
 /// Replace `T` with your own type.
-///
-pub fn from_bytes<'a, T>(s: &'a [u8]) -> Result<T>
+pub fn from_bytes<'a, T>(s: &'a [u8]) -> Result<(T, &'a [u8])>
 where
     T: Deserialize<'a>,
 {
     let mut deserializer = Deserializer::from_bytes(s);
     let t = T::deserialize(&mut deserializer)?;
-    if deserializer.input.is_empty() {
-        Ok(t)
-    } else {
-        Err(Error::TrailingBytes)
-    }
+    Ok((t, deserializer.input))
 }
 
 impl<'de> Deserializer<'de> {
@@ -392,7 +389,7 @@ mod tests {
     fn test_roundtrip<T: Debug + Eq + Serialize + DeserializeOwned>(value: &T) {
         let serialized = to_bytes(value).unwrap();
         // Ignore the size
-        assert_eq!(from_bytes::<T>(&serialized[4..]).unwrap(), *value);
+        assert_eq!(from_bytes::<T>(&serialized[4..]).unwrap().0, *value);
     }
 
     #[test]
@@ -414,7 +411,7 @@ mod tests {
         let s = "Hello, world!";
         let serialized = to_bytes(&s).unwrap();
         // Ignore the size
-        let deserialized: &str = from_bytes(&serialized[4..]).unwrap();
+        let deserialized: &str = from_bytes(&serialized[4..]).unwrap().0;
         assert_eq!(deserialized, s);
     }
 
