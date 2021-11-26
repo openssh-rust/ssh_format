@@ -5,7 +5,7 @@ use crate::{Error, Result};
 
 #[derive(Clone, Debug)]
 pub struct Serializer {
-    output: Vec<u8>,
+    pub(crate) output: Vec<u8>,
 }
 
 impl Default for Serializer {
