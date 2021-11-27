@@ -1,11 +1,11 @@
 use serde::{ser, Serialize};
 use std::convert::TryInto;
 
-use crate::{Error, Result};
+use crate::{Error, Result, SerBacker};
 
 #[derive(Clone, Debug)]
-pub struct Serializer {
-    pub(crate) output: Vec<u8>,
+pub struct Serializer<T: SerBacker = Vec<u8>> {
+    pub(crate) output: T,
 }
 
 impl Default for Serializer {
@@ -14,20 +14,20 @@ impl Default for Serializer {
     }
 }
 
-impl Serializer {
+impl<T: SerBacker> Serializer<T> {
     pub fn new() -> Self {
-        Self {
-            output: [0, 0, 0, 0].into(),
-        }
+        Self { output: T::new() }
     }
 
     /// Return a byte array with the first 4 bytes representing the size
     /// of the rest of the serialized message.
-    pub fn get_output(&mut self) -> Result<&[u8]> {
+    pub fn get_output(&mut self) -> Result<&T> {
         let len: u32 = (self.output.len() - 4)
             .try_into()
             .map_err(|_| Error::BytesTooLong)?;
-        self.output[..4].copy_from_slice(&len.to_be_bytes());
+        self.output
+            .get_first_4byte_slice()
+            .copy_from_slice(&len.to_be_bytes());
         Ok(&self.output)
     }
 
@@ -388,13 +388,13 @@ mod tests {
         let mut serializer = SerializerToTest::new();
 
         serializer.serialize_unit_variant("", 1, "").unwrap();
-        assert_eq!(serializer.get_output().unwrap(), [0, 0, 0, 4, 0, 0, 0, 1]);
+        assert_eq!(serializer.get_output().unwrap(), &[0, 0, 0, 4, 0, 0, 0, 1]);
 
         serializer.reset();
         serializer.serialize_newtype_variant("", 0, "", &3).unwrap();
         assert_eq!(
             serializer.get_output().unwrap(),
-            [0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 3]
+            &[0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 3]
         );
     }
 }

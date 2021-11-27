@@ -14,7 +14,7 @@ impl Transformer {
     pub fn serialize(&mut self, value: impl Serialize) -> Result<&[u8]> {
         self.0.output.resize(4, 0);
         value.serialize(&mut self.0)?;
-        self.0.get_output()
+        Ok(self.0.get_output()?)
     }
 
     /// Return the buffer so that you can read the input into it.
