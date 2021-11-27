@@ -1,6 +1,7 @@
 use core::convert::TryInto;
 
 /// A trait for which can be used to store serialized output.
+#[allow(clippy::len_without_is_empty)]
 pub trait SerBacker {
     /// Return a new backer which len() == 4.
     fn new() -> Self;
