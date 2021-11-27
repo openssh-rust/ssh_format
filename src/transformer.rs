@@ -112,4 +112,19 @@ mod tests {
             },
         );
     }
+
+    #[test]
+    fn test_enum() {
+        #[repr(u32)]
+        #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+        enum E {
+            A = 1,
+            B = 2,
+            C = 9999,
+        }
+
+        test_roundtrip(&mut Transformer::new(), &E::A);
+        test_roundtrip(&mut Transformer::new(), &E::B);
+        test_roundtrip(&mut Transformer::new(), &E::C);
+    }
 }
