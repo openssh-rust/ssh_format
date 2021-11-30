@@ -22,7 +22,15 @@ impl<T: SerBacker> Serializer<T> {
     /// Return a byte array with the first 4 bytes representing the size
     /// of the rest of the serialized message.
     pub fn get_output(&mut self) -> Result<&T> {
-        let len: u32 = (self.output.len() - 4)
+        self.get_output_with_data(0)
+    }
+
+    /// Return a byte array with the first 4 bytes representing the size
+    /// of the rest of the serialized message.
+    ///
+    /// * `len` - length of additional data included in the packet.
+    pub fn get_output_with_data(&mut self, len: u32) -> Result<&T> {
+        let len: u32 = (self.output.len() - 4 + len as usize)
             .try_into()
             .map_err(|_| Error::BytesTooLong)?;
         self.output
