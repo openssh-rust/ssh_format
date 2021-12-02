@@ -17,6 +17,12 @@ impl Transformer {
         Ok(self.0.get_output()?)
     }
 
+    /// Get underlying serializer, can be used without reset
+    pub fn get_ser(&mut self) -> &mut Serializer {
+        self.0.output.resize(4, 0);
+        &mut self.0
+    }
+
     /// Return the buffer so that you can read the input into it.
     /// You can also adjust the capacity and free up memory.
     pub fn get_buffer(&mut self) -> &mut Vec<u8> {
