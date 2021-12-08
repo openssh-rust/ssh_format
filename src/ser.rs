@@ -223,7 +223,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
 
     /// Unsupported
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
-        Err(Error::Unsupported("serialize_map"))
+        Err(Error::Unsupported(&"serialize_map"))
     }
 }
 
@@ -262,7 +262,7 @@ impl<'a> ser::SerializeMap for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::Unsupported("serialize_map"))
+        Err(Error::Unsupported(&"serialize_map"))
     }
 
     /// Unsupported
@@ -270,12 +270,12 @@ impl<'a> ser::SerializeMap for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::Unsupported("serialize_map"))
+        Err(Error::Unsupported(&"serialize_map"))
     }
 
     /// Unsupported
     fn end(self) -> Result<()> {
-        Err(Error::Unsupported("serialize_map"))
+        Err(Error::Unsupported(&"serialize_map"))
     }
 }
 

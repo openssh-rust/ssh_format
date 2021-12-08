@@ -12,7 +12,11 @@ pub enum Error {
     InvalidBoolEncoding,
     InvalidChar,
     InvalidStr(Utf8Error),
-    Unsupported(&'static str),
+
+    /// Unsupported error.
+    ///
+    /// &str is a fat pointer, but &&str is a thin pointer.
+    Unsupported(&'static &'static str),
     BytesTooLong,
 }
 

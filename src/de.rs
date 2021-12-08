@@ -303,7 +303,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        Err(Error::Unsupported("deserialize_seq"))
+        Err(Error::Unsupported(&"deserialize_seq"))
     }
 
     /// Unsupported
@@ -311,7 +311,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        Err(Error::Unsupported("deserialize_any"))
+        Err(Error::Unsupported(&"deserialize_any"))
     }
 
     /// Unsupported
@@ -319,7 +319,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        Err(Error::Unsupported("deserialize_option"))
+        Err(Error::Unsupported(&"deserialize_option"))
     }
 
     /// Unsupported
@@ -327,7 +327,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        Err(Error::Unsupported("deserialize_map"))
+        Err(Error::Unsupported(&"deserialize_map"))
     }
 
     /// Unsupported
@@ -335,7 +335,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        Err(Error::Unsupported("deserialize_identifier"))
+        Err(Error::Unsupported(&"deserialize_identifier"))
     }
 
     /// Unsupported
@@ -343,7 +343,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        Err(Error::Unsupported("deserialize_ignored_any"))
+        Err(Error::Unsupported(&"deserialize_ignored_any"))
     }
 }
 
