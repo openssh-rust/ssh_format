@@ -32,7 +32,7 @@ impl<T: SerBacker> Serializer<T> {
     pub fn get_output_with_data(&mut self, len: u32) -> Result<&T> {
         let len: u32 = (self.output.len() - 4 + len as usize)
             .try_into()
-            .map_err(|_| Error::BytesTooLong)?;
+            .map_err(|_| Error::TooLong)?;
         self.output
             .get_first_4byte_slice()
             .copy_from_slice(&len.to_be_bytes());
@@ -115,7 +115,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<()> {
-        let len: u32 = v.len().try_into().map_err(|_| Error::BytesTooLong)?;
+        let len: u32 = v.len().try_into().map_err(|_| Error::TooLong)?;
 
         self.serialize_u32(len)?;
 

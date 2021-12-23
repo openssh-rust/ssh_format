@@ -17,7 +17,7 @@ pub enum Error {
     ///
     /// &str is a fat pointer, but &&str is a thin pointer.
     Unsupported(&'static &'static str),
-    BytesTooLong,
+    TooLong,
 }
 
 impl ser::Error for Error {
@@ -41,7 +41,7 @@ impl Display for Error {
             Error::InvalidChar => formatter.write_str("Invalid char"),
             Error::InvalidStr(err) => formatter.write_fmt(format_args!("Invalid str: {:#?}", err)),
             Error::Unsupported(s) => formatter.write_fmt(format_args!("Unsupported {}", s)),
-            Error::BytesTooLong => formatter.write_str("Bytes must not be larger than u32::MAX"),
+            Error::TooLong => formatter.write_str("Bytes must not be larger than u32::MAX"),
         }
     }
 }
