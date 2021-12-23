@@ -81,13 +81,13 @@ mod tests {
     }
 
     #[test]
-    fn test_array() {
+    fn test_seq() {
         let mut transformer = Transformer::new();
 
-        test_roundtrip(&mut transformer, &[0x00_u8, 0x01_u8, 0x10_u8, 0x78_u8]);
+        test_roundtrip(&mut transformer, &vec![0x00_u8, 0x01_u8, 0x10_u8, 0x78_u8]);
         test_roundtrip(
             &mut transformer,
-            &[0x0010_u16, 0x0100_u16, 0x1034_u16, 0x7812_u16],
+            &vec![0x0010_u16, 0x0100_u16, 0x1034_u16, 0x7812_u16],
         );
     }
 

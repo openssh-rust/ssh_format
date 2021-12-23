@@ -420,9 +420,9 @@ mod tests {
     }
 
     #[test]
-    fn test_array() {
-        test_roundtrip(&[0x00_u8, 0x01_u8, 0x10_u8, 0x78_u8]);
-        test_roundtrip(&[0x0010_u16, 0x0100_u16, 0x1034_u16, 0x7812_u16]);
+    fn test_seq() {
+        test_roundtrip(&vec![0x00_u8, 0x01_u8, 0x10_u8, 0x78_u8]);
+        test_roundtrip(&vec![0x0010_u16, 0x0100_u16, 0x1034_u16, 0x7812_u16]);
     }
 
     #[test]
