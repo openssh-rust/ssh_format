@@ -150,7 +150,11 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         value.serialize(self)
     }
 
-    fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
+    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
+        if let Some(len) = len {
+            let len: u32 = len.try_into().map_err(|_| Error::TooLong)?;
+            self.serialize_u32(len)?;
+        }
         Ok(self)
     }
 
@@ -350,13 +354,18 @@ mod tests {
     #[test]
     fn test_array() {
         let array = [0x00_u8, 0x01_u8, 0x10_u8, 0x78_u8];
-        let serialized = to_bytes(&array).unwrap();
-        assert_eq!(serialized[..4], [0, 0, 0, 4]);
-        assert_eq!(serialized[4..], array);
+        let slice: &[_] = &array;
+
+        let serialized = to_bytes(&slice).unwrap();
+        assert_eq!(serialized[..4], [0, 0, 0, 8]);
+        assert_eq!(serialized[4..8], [0, 0, 0, 4]);
+        assert_eq!(serialized[8..], array);
+
+        let slice: &[_] = &[0x0010_u16, 0x0100_u16, 0x1034_u16, 0x7812_u16];
 
         assert_eq!(
-            to_bytes(&[0x0010_u16, 0x0100_u16, 0x1034_u16, 0x7812_u16]).unwrap(),
-            &[0, 0, 0, 8, 0x00, 0x10, 0x01, 0x00, 0x10, 0x34, 0x78, 0x12_u8]
+            to_bytes(&slice).unwrap(),
+            &[0, 0, 0, 12, 0, 0, 0, 4, 0x00, 0x10, 0x01, 0x00, 0x10, 0x34, 0x78, 0x12_u8]
         );
     }
 

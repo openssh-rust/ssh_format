@@ -210,32 +210,6 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        struct Access<'a, 'de> {
-            deserializer: &'a mut Deserializer<'de>,
-            len: usize,
-        }
-
-        impl<'a, 'de> SeqAccess<'de> for Access<'a, 'de> {
-            type Error = Error;
-
-            fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>>
-            where
-                T: DeserializeSeed<'de>,
-            {
-                if self.len > 0 {
-                    self.len -= 1;
-                    let value = seed.deserialize(&mut *self.deserializer)?;
-                    Ok(Some(value))
-                } else {
-                    Ok(None)
-                }
-            }
-
-            fn size_hint(&self) -> Option<usize> {
-                Some(self.len)
-            }
-        }
-
         visitor.visit_seq(Access {
             deserializer: self,
             len,
@@ -299,11 +273,15 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     }
 
     /// Unsupported
-    fn deserialize_seq<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        Err(Error::Unsupported(&"deserialize_seq"))
+        let len = self.next_u32()? as usize;
+        visitor.visit_seq(Access {
+            deserializer: self,
+            len,
+        })
     }
 
     /// Unsupported
@@ -373,6 +351,32 @@ impl<'a, 'de> VariantAccess<'de> for &'a mut Deserializer<'de> {
         V: Visitor<'de>,
     {
         de::Deserializer::deserialize_tuple(self, fields.len(), visitor)
+    }
+}
+
+struct Access<'a, 'de> {
+    deserializer: &'a mut Deserializer<'de>,
+    len: usize,
+}
+
+impl<'a, 'de> SeqAccess<'de> for Access<'a, 'de> {
+    type Error = Error;
+
+    fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>>
+    where
+        T: DeserializeSeed<'de>,
+    {
+        if self.len > 0 {
+            self.len -= 1;
+            let value = seed.deserialize(&mut *self.deserializer)?;
+            Ok(Some(value))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn size_hint(&self) -> Option<usize> {
+        Some(self.len)
     }
 }
 
