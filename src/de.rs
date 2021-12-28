@@ -14,6 +14,10 @@ impl<'de> Deserializer<'de> {
     pub fn from_bytes(input: &'de [u8]) -> Self {
         Deserializer { input }
     }
+
+    pub const fn into_inner(self) -> &'de [u8] {
+        self.input
+    }
 }
 
 /// Return a deserialized value and trailing bytes.
