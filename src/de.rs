@@ -11,7 +11,7 @@ pub struct Deserializer<'de> {
 }
 
 impl<'de> Deserializer<'de> {
-    pub fn from_bytes(input: &'de [u8]) -> Self {
+    pub const fn from_bytes(input: &'de [u8]) -> Self {
         Deserializer { input }
     }
 
