@@ -69,7 +69,7 @@ macro_rules! impl_for_serialize_primitive {
     };
 }
 
-impl<'a> ser::Serializer for &'a mut Serializer {
+impl<'a, Container: SerBacker> ser::Serializer for &'a mut Serializer<Container> {
     type Ok = ();
     type Error = Error;
 
@@ -233,7 +233,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
 
 macro_rules! impl_serialize_trait {
     ( $name:ident, $function_name:ident ) => {
-        impl<'a> ser::$name for &'a mut Serializer {
+        impl<'a, Container: SerBacker> ser::$name for &'a mut Serializer<Container> {
             type Ok = ();
             type Error = Error;
 
@@ -257,7 +257,7 @@ impl_serialize_trait!(SerializeTupleStruct, serialize_field);
 impl_serialize_trait!(SerializeTupleVariant, serialize_field);
 
 /// Unsupported
-impl<'a> ser::SerializeMap for &'a mut Serializer {
+impl<'a, Container: SerBacker> ser::SerializeMap for &'a mut Serializer<Container> {
     type Ok = ();
     type Error = Error;
 
@@ -283,7 +283,7 @@ impl<'a> ser::SerializeMap for &'a mut Serializer {
     }
 }
 
-impl<'a> ser::SerializeStruct for &'a mut Serializer {
+impl<'a, Container: SerBacker> ser::SerializeStruct for &'a mut Serializer<Container> {
     type Ok = ();
     type Error = Error;
 
@@ -298,7 +298,7 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
         Ok(())
     }
 }
-impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
+impl<'a, Container: SerBacker> ser::SerializeStructVariant for &'a mut Serializer<Container> {
     type Ok = ();
     type Error = Error;
 
