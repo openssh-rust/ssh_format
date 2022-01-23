@@ -12,7 +12,9 @@ pub trait SerBacker {
 
     fn extend_from_slice(&mut self, other: &[u8]);
     fn push(&mut self, byte: u8);
-    fn truncate(&mut self, len: usize);
+
+    /// Reset to the initial state where len() == 4
+    fn reset(&mut self);
 }
 
 impl SerBacker for Vec<u8> {
@@ -36,7 +38,7 @@ impl SerBacker for Vec<u8> {
         self.push(byte)
     }
 
-    fn truncate(&mut self, len: usize) {
-        self.truncate(len)
+    fn reset(&mut self) {
+        self.resize(4, 0);
     }
 }

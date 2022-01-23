@@ -41,7 +41,7 @@ impl<T: SerBacker> Serializer<T> {
 
     /// Clear the output but preserve its allocated memory
     pub fn reset(&mut self) {
-        self.output.truncate(4);
+        self.output.reset();
     }
 }
 
