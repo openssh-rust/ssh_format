@@ -121,6 +121,8 @@ impl<'a, Container: SerBacker> ser::Serializer for &'a mut Serializer<Container>
     fn serialize_bytes(self, v: &[u8]) -> Result<()> {
         let len: u32 = v.len().try_into().map_err(|_| Error::TooLong)?;
 
+        self.reserve(4 + v.len());
+
         self.serialize_u32(len)?;
 
         self.output.extend_from_slice(v);
@@ -157,6 +159,9 @@ impl<'a, Container: SerBacker> ser::Serializer for &'a mut Serializer<Container>
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
         if let Some(len) = len {
             let len: u32 = len.try_into().map_err(|_| Error::TooLong)?;
+
+            self.reserve(4 + len as usize);
+
             self.serialize_u32(len)?;
         }
         Ok(self)
