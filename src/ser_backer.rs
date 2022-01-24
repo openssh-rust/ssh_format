@@ -15,6 +15,12 @@ pub trait SerBacker {
 
     /// Reset to the initial state where len() == 4
     fn reset(&mut self);
+
+    /// Reserves capacity for at least additional more bytes to be inserted.
+    ///
+    /// More than additional bytes may be reserved in order to avoid frequent
+    /// reallocations. A call to reserve may result in an allocation.
+    fn reserve(&mut self, additional: usize);
 }
 
 impl SerBacker for Vec<u8> {
@@ -40,5 +46,9 @@ impl SerBacker for Vec<u8> {
 
     fn reset(&mut self) {
         self.resize(4, 0);
+    }
+
+    fn reserve(&mut self, additional: usize) {
+        self.reserve(additional);
     }
 }
