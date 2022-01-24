@@ -19,6 +19,10 @@ impl<T: SerBacker> Serializer<T> {
         Self { output: T::new() }
     }
 
+    pub fn reserve(&mut self, additional: usize) {
+        self.output.reserve(additional);
+    }
+
     /// Return a byte array with the first 4 bytes representing the size
     /// of the rest of the serialized message.
     pub fn get_output(&mut self) -> Result<&mut T> {
