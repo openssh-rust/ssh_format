@@ -7,7 +7,7 @@ authors = ["Jiahao XU <Jiahao_XU@outlook.com>"]
 
 license = "MIT"
 description = "Data format used to communicate with openssh mux server."
-repository = "https://github.com/NobodyXu/ssh_format"
+repository = "https://github.com/openssh-rust/ssh_format"
 
 keywords = ["serde", "ssh", "serialization", "parsing", "encoding"]
 categories = ["encoding"]
