@@ -1,6 +1,6 @@
 # ssh_mux_format
 
-[![Rust](https://github.com/NobodyXu/ssh_format/actions/workflows/rust.yml/badge.svg)](https://github.com/NobodyXu/ssh_format/actions/workflows/rust.yml)
+[![Rust](https://github.com/openssh-rust/ssh_format/actions/workflows/rust.yml/badge.svg)](https://github.com/openssh-rust/ssh_format/actions/workflows/rust.yml)
 
 [![crate.io downloads](https://img.shields.io/crates/d/ssh_format)](https://crates.io/crates/ssh_format)
 
