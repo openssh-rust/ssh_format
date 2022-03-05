@@ -48,6 +48,6 @@ jobs:
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
           target/
-        key: ${{ github.event.repository.name }}-${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}-v2
+        key: ${{ github.event.repository.name }}-${{ runner.os }}-cargo-test-v2
     - name: Run tests
       run: cargo test
