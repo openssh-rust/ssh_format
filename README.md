@@ -1,4 +1,4 @@
-# ssh_mux_format
+# ssh_format
 
 [![Rust](https://github.com/openssh-rust/ssh_format/actions/workflows/rust.yml/badge.svg)](https://github.com/openssh-rust/ssh_format/actions/workflows/rust.yml)
 
