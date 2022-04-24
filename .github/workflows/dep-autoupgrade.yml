@@ -1,0 +1,27 @@
+name: depdendency auto upgrade format
+
+env:
+  CARGO_TERM_COLOR: always
+
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '30 5 * * *'
+
+jobs:
+  auto-update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the head commit of the branch
+      uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+    - name: Install cargo-edit
+      run: |
+        cargo install cargo-edit
+    - name: Run auto dependency update 
+      uses: romoh/dependencies-autoupdate@v1
+      with: 
+        token: ${{ secrets.GITHUB_TOKEN }}
+        update-command: "cargo upgrade --skip-compatible"
