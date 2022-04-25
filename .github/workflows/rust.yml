@@ -9,11 +9,13 @@ on:
       - 'README.md'
       - 'LICENSE'
       - '.gitignore'
+      - '.github/workflows/dep-autoupgrade.yml'
   pull_request:
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
       - '.gitignore'
+      - '.github/workflows/dep-autoupgrade.yml'
 
 jobs:
   check:
