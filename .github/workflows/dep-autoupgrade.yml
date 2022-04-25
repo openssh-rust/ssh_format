@@ -24,4 +24,4 @@ jobs:
       uses: romoh/dependencies-autoupdate@v1
       with: 
         token: ${{ secrets.GITHUB_TOKEN }}
-        update-command: "cargo upgrade --skip-compatible"
+        update-command: "~/.cargo/bin/cargo-upgrade --skip-compatible"
