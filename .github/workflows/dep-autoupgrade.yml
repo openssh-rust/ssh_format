@@ -28,6 +28,7 @@ jobs:
         key: ${{ github.event.repository.name }}-${{ runner.os }}-dep-autoupgrade-v2
     - name: Install cargo-edit
       run: |
+        [ ! -f ~/.cargo/bin/cargo-upgrade ] && \
         cargo install cargo-edit --features upgrade --bin cargo-upgrade
     - name: Run auto dependency update 
       uses: romoh/dependencies-autoupdate@v1
