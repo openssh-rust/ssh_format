@@ -23,6 +23,9 @@ jobs:
         crate: cargo-edit
         version: latest
         use-tool-cache: true
+    - name: Generate Cargo.lock
+      run: |
+        cargo update
     - name: Run auto dependency update 
       uses: romoh/dependencies-autoupdate@v1
       with: 
