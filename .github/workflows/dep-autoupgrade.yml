@@ -17,12 +17,14 @@ jobs:
       uses: actions/checkout@v2
       with:
         persist-credentials: false
+    - name: Install cargo-bininstall
+      run: |
+        mkdir -p  ~/.cargo/bin/
+        cd ~/.cargo/bin/ && curl -L $url | tar zxf - && chmod +x cargo-binstall
+      env:
+        url: https://github.com/ryankurte/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-gnu.tgz
     - name: Install cargo-edit
-      uses: actions-rs/install@v0.1
-      with:
-        crate: cargo-edit
-        version: latest
-        use-tool-cache: true
+      run: cargo binstall cargo-edit
     - name: Generate Cargo.lock
       run: cargo update
     - name: Run auto dependency update 
