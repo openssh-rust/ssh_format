@@ -31,7 +31,7 @@ jobs:
     - name: Generate Cargo.lock
       run: cargo update
     - name: Run auto dependency update 
-      uses: NobodyXu/dependencies-autoupdate@v1.5
+      uses: NobodyXu/dependencies-autoupdate@v1.6
       with: 
         token: ${{ secrets.GITHUB_TOKEN }}
         update-command: "'cargo upgrade --skip-compatible'"
