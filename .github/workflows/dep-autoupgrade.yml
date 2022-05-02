@@ -25,11 +25,13 @@ jobs:
       env:
         url: https://github.com/ryankurte/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-gnu.tgz
     - name: Install cargo-edit
-      run: cargo binstall --no-confirm cargo-edit
+      run: |
+        cargo binstall --no-confirm cargo-edit
+        which cargo-upgrade
     - name: Generate Cargo.lock
       run: cargo update
     - name: Run auto dependency update 
       uses: NobodyXu/dependencies-autoupdate@v1
       with: 
         token: ${{ secrets.GITHUB_TOKEN }}
-        update-command: "env PATH=$PATH:~/.cargo/bin cargo upgrade --skip-compatible"
+        update-command: "cargo upgrade --skip-compatible"
