@@ -26,7 +26,7 @@ jobs:
     - name: Generate Cargo.lock
       run: cargo update
     - name: Run auto dependency update 
-      uses: romoh/dependencies-autoupdate@v1
+      uses: NobodyXu/dependencies-autoupdate@v1
       with: 
         token: ${{ secrets.GITHUB_TOKEN }}
-        update-command: "'env PATH=$PATH:~/.cargo/bin cargo upgrade --skip-compatible'"
+        update-command: "env PATH=$PATH:~/.cargo/bin cargo upgrade --skip-compatible"
