@@ -5,47 +5,49 @@ use crate::{Error, Result, SerBacker};
 
 #[derive(Clone, Debug)]
 pub struct Serializer<T: SerBacker = Vec<u8>> {
-    pub(crate) output: T,
+    pub output: T,
+    len: usize,
 }
 
-impl Default for Serializer {
+impl<T: SerBacker + Default> Default for Serializer<T> {
     fn default() -> Self {
-        Self::new()
+        Self::new(Default::default())
     }
 }
 
 impl<T: SerBacker> Serializer<T> {
-    pub fn new() -> Self {
-        Self { output: T::new() }
+    pub fn new(output: T) -> Self {
+        Self { output, len: 0 }
     }
 
     pub fn reserve(&mut self, additional: usize) {
         self.output.reserve(additional);
     }
 
-    /// Return a byte array with the first 4 bytes representing the size
-    /// of the rest of the serialized message.
-    pub fn get_output(&mut self) -> Result<&mut T> {
-        self.get_output_with_data(0)
-    }
-
-    /// Return a byte array with the first 4 bytes representing the size
-    /// of the rest of the serialized message.
-    ///
     /// * `len` - length of additional data included in the packet.
-    pub fn get_output_with_data(&mut self, len: u32) -> Result<&mut T> {
-        let len: u32 = (self.output.len() - 4 + len as usize)
+    pub fn create_header(&self, len: u32) -> Result<[u8; 4]> {
+        let len: u32 = (self.len + len as usize)
             .try_into()
             .map_err(|_| Error::TooLong)?;
-        self.output
-            .get_first_4byte_slice()
-            .copy_from_slice(&len.to_be_bytes());
-        Ok(&mut self.output)
+
+        Ok(len.to_be_bytes())
     }
 
-    /// Clear the output but preserve its allocated memory
-    pub fn reset(&mut self) {
-        self.output.reset();
+    /// Reset the internal counter.
+    /// This would cause [`Self::create_header`] to return `Ok([0, 0, 0, 0])`
+    /// until you call [`Serialize::serialize`] again.
+    pub fn reset_counter(&mut self) {
+        self.len = 0;
+    }
+
+    fn extend_from_slice(&mut self, other: &[u8]) {
+        self.output.extend_from_slice(other);
+        self.len += other.len();
+    }
+
+    fn push(&mut self, byte: u8) {
+        self.output.push(byte);
+        self.len += 1;
     }
 }
 
@@ -57,17 +59,21 @@ pub fn to_bytes<T>(value: &T) -> Result<Vec<u8>>
 where
     T: Serialize,
 {
-    let mut serializer = Serializer::default();
+    let mut buffer = vec![0, 0, 0, 0];
+
+    let mut serializer = Serializer::new(&mut buffer);
     value.serialize(&mut serializer)?;
-    // Fill the first 4 bytes with the size
-    serializer.get_output()?;
-    Ok(serializer.output)
+    let header = serializer.create_header(0)?;
+
+    buffer[..4].copy_from_slice(&header);
+
+    Ok(buffer)
 }
 
 macro_rules! impl_for_serialize_primitive {
     ( $name:ident, $type:ty ) => {
         fn $name(self, v: $type) -> Result<()> {
-            self.output.extend_from_slice(&v.to_be_bytes());
+            self.extend_from_slice(&v.to_be_bytes());
             Ok(())
         }
     };
@@ -90,12 +96,12 @@ impl<'a, Container: SerBacker> ser::Serializer for &'a mut Serializer<Container>
     }
 
     fn serialize_u8(self, v: u8) -> Result<()> {
-        self.output.push(v);
+        self.push(v);
         Ok(())
     }
 
     fn serialize_i8(self, v: i8) -> Result<()> {
-        self.output.push(v as u8);
+        self.push(v as u8);
         Ok(())
     }
 
@@ -125,7 +131,7 @@ impl<'a, Container: SerBacker> ser::Serializer for &'a mut Serializer<Container>
 
         self.serialize_u32(len)?;
 
-        self.output.extend_from_slice(v);
+        self.extend_from_slice(v);
 
         Ok(())
     }
@@ -325,10 +331,9 @@ impl<'a, Container: SerBacker> ser::SerializeStructVariant for &'a mut Serialize
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use serde::ser;
-
-    type SerializerToTest = Serializer;
+    use crate::{to_bytes, Serializer};
+    use serde::{ser, Serialize};
+    use std::convert::TryInto;
 
     #[test]
     fn test_integer() {
@@ -409,18 +414,20 @@ mod tests {
 
     #[test]
     fn test_enum() {
-        use ser::Serializer;
+        use ser::Serializer as SerdeSerializerTrait;
 
-        let mut serializer = SerializerToTest::new();
+        let mut serializer: Serializer<Vec<u8>> = Serializer::default();
 
         serializer.serialize_unit_variant("", 1, "").unwrap();
-        assert_eq!(serializer.get_output().unwrap(), &[0, 0, 0, 4, 0, 0, 0, 1]);
+        assert_eq!(serializer.create_header(0).unwrap(), [0, 0, 0, 4]);
+        assert_eq!(serializer.output, [0, 0, 0, 1]);
 
-        serializer.reset();
+        // Reset serializer
+        serializer.reset_counter();
+        serializer.output.clear();
+
         serializer.serialize_newtype_variant("", 0, "", &3).unwrap();
-        assert_eq!(
-            serializer.get_output().unwrap(),
-            &[0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 3]
-        );
+        assert_eq!(serializer.create_header(0).unwrap(), [0, 0, 0, 8]);
+        assert_eq!(serializer.output, [0, 0, 0, 0, 0, 0, 0, 3]);
     }
 }
