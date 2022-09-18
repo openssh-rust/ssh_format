@@ -45,6 +45,11 @@ impl<T: SerOutput> Serializer<T> {
         self.len += other.len();
     }
 
+    fn add_borrowed_bytes(&mut self, other: &[u8]) {
+        self.output.add_borrowed_bytes(other);
+        self.len += other.len();
+    }
+
     fn push(&mut self, byte: u8) {
         self.output.push(byte);
         self.len += 1;
@@ -127,11 +132,9 @@ impl<'a, Container: SerOutput> ser::Serializer for &'a mut Serializer<Container>
     fn serialize_bytes(self, v: &[u8]) -> Result<()> {
         let len: u32 = v.len().try_into().map_err(|_| Error::TooLong)?;
 
-        self.reserve(4 + v.len());
-
         self.serialize_u32(len)?;
 
-        self.extend_from_slice(v);
+        self.add_borrowed_bytes(v);
 
         Ok(())
     }
