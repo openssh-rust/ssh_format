@@ -27,9 +27,9 @@
 mod de;
 mod error;
 mod ser;
-mod ser_backer;
+mod ser_output;
 
 pub use de::{from_bytes, Deserializer};
 pub use error::{Error, Result};
 pub use ser::{to_bytes, Serializer};
-pub use ser_backer::SerOutput;
+pub use ser_output::SerOutput;
