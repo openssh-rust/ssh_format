@@ -8,6 +8,10 @@ pub trait SerOutput {
     /// More than additional bytes may be reserved in order to avoid frequent
     /// reallocations. A call to reserve may result in an allocation.
     fn reserve(&mut self, additional: usize);
+
+    fn add_borrowed_bytes(&mut self, bytes: &[u8]) {
+        self.extend_from_slice(bytes);
+    }
 }
 
 impl<T: SerOutput> SerOutput for &mut T {
@@ -21,6 +25,10 @@ impl<T: SerOutput> SerOutput for &mut T {
 
     fn reserve(&mut self, additional: usize) {
         (*self).reserve(additional);
+    }
+
+    fn add_borrowed_bytes(&mut self, bytes: &[u8]) {
+        (*self).add_borrowed_bytes(bytes);
     }
 }
 
