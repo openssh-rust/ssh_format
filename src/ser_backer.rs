@@ -1,5 +1,4 @@
 /// A trait for which can be used to store serialized output.
-#[allow(clippy::len_without_is_empty)]
 pub trait SerBacker {
     fn extend_from_slice(&mut self, other: &[u8]);
     fn push(&mut self, byte: u8);
