@@ -1,5 +1,5 @@
 /// A trait for which can be used to store serialized output.
-pub trait SerBacker {
+pub trait SerOutput {
     fn extend_from_slice(&mut self, other: &[u8]);
     fn push(&mut self, byte: u8);
 
@@ -10,7 +10,7 @@ pub trait SerBacker {
     fn reserve(&mut self, additional: usize);
 }
 
-impl<T: SerBacker> SerBacker for &mut T {
+impl<T: SerOutput> SerOutput for &mut T {
     fn extend_from_slice(&mut self, other: &[u8]) {
         (*self).extend_from_slice(other)
     }
@@ -24,7 +24,7 @@ impl<T: SerBacker> SerBacker for &mut T {
     }
 }
 
-impl SerBacker for Vec<u8> {
+impl SerOutput for Vec<u8> {
     fn extend_from_slice(&mut self, other: &[u8]) {
         self.extend_from_slice(other)
     }

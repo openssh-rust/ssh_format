@@ -1,21 +1,21 @@
 use serde::{ser, Serialize};
 use std::convert::TryInto;
 
-use crate::{Error, Result, SerBacker};
+use crate::{Error, Result, SerOutput};
 
 #[derive(Clone, Debug)]
-pub struct Serializer<T: SerBacker = Vec<u8>> {
+pub struct Serializer<T: SerOutput = Vec<u8>> {
     pub output: T,
     len: usize,
 }
 
-impl<T: SerBacker + Default> Default for Serializer<T> {
+impl<T: SerOutput + Default> Default for Serializer<T> {
     fn default() -> Self {
         Self::new(Default::default())
     }
 }
 
-impl<T: SerBacker> Serializer<T> {
+impl<T: SerOutput> Serializer<T> {
     pub fn new(output: T) -> Self {
         Self { output, len: 0 }
     }
@@ -79,7 +79,7 @@ macro_rules! impl_for_serialize_primitive {
     };
 }
 
-impl<'a, Container: SerBacker> ser::Serializer for &'a mut Serializer<Container> {
+impl<'a, Container: SerOutput> ser::Serializer for &'a mut Serializer<Container> {
     type Ok = ();
     type Error = Error;
 
@@ -248,7 +248,7 @@ impl<'a, Container: SerBacker> ser::Serializer for &'a mut Serializer<Container>
 
 macro_rules! impl_serialize_trait {
     ( $name:ident, $function_name:ident ) => {
-        impl<'a, Container: SerBacker> ser::$name for &'a mut Serializer<Container> {
+        impl<'a, Container: SerOutput> ser::$name for &'a mut Serializer<Container> {
             type Ok = ();
             type Error = Error;
 
@@ -272,7 +272,7 @@ impl_serialize_trait!(SerializeTupleStruct, serialize_field);
 impl_serialize_trait!(SerializeTupleVariant, serialize_field);
 
 /// Unsupported
-impl<'a, Container: SerBacker> ser::SerializeMap for &'a mut Serializer<Container> {
+impl<'a, Container: SerOutput> ser::SerializeMap for &'a mut Serializer<Container> {
     type Ok = ();
     type Error = Error;
 
@@ -298,7 +298,7 @@ impl<'a, Container: SerBacker> ser::SerializeMap for &'a mut Serializer<Containe
     }
 }
 
-impl<'a, Container: SerBacker> ser::SerializeStruct for &'a mut Serializer<Container> {
+impl<'a, Container: SerOutput> ser::SerializeStruct for &'a mut Serializer<Container> {
     type Ok = ();
     type Error = Error;
 
@@ -313,7 +313,7 @@ impl<'a, Container: SerBacker> ser::SerializeStruct for &'a mut Serializer<Conta
         Ok(())
     }
 }
-impl<'a, Container: SerBacker> ser::SerializeStructVariant for &'a mut Serializer<Container> {
+impl<'a, Container: SerOutput> ser::SerializeStructVariant for &'a mut Serializer<Container> {
     type Ok = ();
     type Error = Error;
 

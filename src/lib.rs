@@ -32,4 +32,4 @@ mod ser_backer;
 pub use de::{from_bytes, Deserializer};
 pub use error::{Error, Result};
 pub use ser::{to_bytes, Serializer};
-pub use ser_backer::SerBacker;
+pub use ser_backer::SerOutput;
