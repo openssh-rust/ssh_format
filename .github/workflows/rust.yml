@@ -34,7 +34,7 @@ jobs:
         key: ${{ github.event.repository.name }}-${{ runner.os }}-cargo-check-v2
     - name: Run check
       run: |
-        cargo clippy --all
+        cargo clippy --all --all-features
         cargo fmt --all -- --check
 
   build:
@@ -52,4 +52,4 @@ jobs:
           target/
         key: ${{ github.event.repository.name }}-${{ runner.os }}-cargo-test-v2
     - name: Run tests
-      run: cargo test
+      run: cargo test --all-features
