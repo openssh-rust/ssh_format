@@ -121,7 +121,22 @@ impl<'a, Container: SerOutput> ser::Serializer for &'a mut Serializer<Container>
     }
 
     fn serialize_str(self, v: &str) -> Result<()> {
-        self.serialize_bytes(v.as_bytes())
+        // Filter all null byte
+        let it = v.as_bytes().iter().copied().filter(|byte| *byte != b'\0');
+
+        // Count number of non-null byte
+        let len = it.clone().count();
+
+        // Reserve bytes
+        self.reserve(4 + len);
+
+        self.serialize_u32(len.try_into().map_err(|_| Error::TooLong)?)?;
+
+        for byte in it {
+            self.serialize_u8(byte)?;
+        }
+
+        Ok(())
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<()> {
