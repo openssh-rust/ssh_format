@@ -21,7 +21,7 @@
 //! ## Feature
 //!  - `is_human_readable` enables `Serializer::is_human_readable` and
 //!    `Deserializer::is_human_readable`.
-
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![forbid(unsafe_code)]
 
 mod de;
