@@ -37,3 +37,18 @@ impl SerOutput for Vec<u8> {
         self.reserve(additional);
     }
 }
+
+#[cfg(feature = "bytes")]
+impl SerOutput for bytes::BytesMut {
+    fn extend_from_slice(&mut self, other: &[u8]) {
+        self.extend_from_slice(other)
+    }
+
+    fn push(&mut self, byte: u8) {
+        bytes::BufMut::put_u8(self, byte)
+    }
+
+    fn reserve(&mut self, additional: usize) {
+        self.reserve(additional);
+    }
+}
