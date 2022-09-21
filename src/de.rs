@@ -39,10 +39,10 @@ impl<'de> Deserializer<'de> {
 /// More complicated one (sending over socket):
 ///
 /// ```ignore
-/// let buffer = // read in 4 bytes;
-/// let (size: u32, _trailing_bytes0 = from_bytes(&buffer).unwrap();
+/// let buffer = [0, 0, 0, 4];
+/// let (size: u32, _trailing_bytes) = from_bytes(&buffer).unwrap();
 ///
-/// let buffer = // read in `size` bytes;
+/// let buffer = [0, 0, 4, 0];
 /// let (val: <T>, _trailing_bytes) = from_bytes(&buffer).unwrap();
 /// ```
 ///
