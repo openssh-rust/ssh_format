@@ -49,6 +49,10 @@ impl<T: SerOutput> Serializer<T> {
         self.output.push(byte);
         self.len += 1;
     }
+
+    fn serialize_usize(&mut self, v: usize) -> Result<()> {
+        ser::Serializer::serialize_u32(self, v.try_into().map_err(|_| Error::TooLong)?)
+    }
 }
 
 /// Return a byte array with the first 4 bytes representing the size
@@ -130,7 +134,7 @@ impl<'a, Container: SerOutput> ser::Serializer for &'a mut Serializer<Container>
         // Reserve bytes
         self.reserve(4 + len);
 
-        self.serialize_u32(len.try_into().map_err(|_| Error::TooLong)?)?;
+        self.serialize_usize(len)?;
 
         for byte in it {
             self.serialize_u8(byte)?;
@@ -140,11 +144,9 @@ impl<'a, Container: SerOutput> ser::Serializer for &'a mut Serializer<Container>
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<()> {
-        let len: u32 = v.len().try_into().map_err(|_| Error::TooLong)?;
-
         self.reserve(4 + v.len());
 
-        self.serialize_u32(len)?;
+        self.serialize_usize(v.len())?;
 
         self.extend_from_slice(v);
 
@@ -179,11 +181,9 @@ impl<'a, Container: SerOutput> ser::Serializer for &'a mut Serializer<Container>
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
         if let Some(len) = len {
-            let len: u32 = len.try_into().map_err(|_| Error::TooLong)?;
-
             self.reserve(4 + len as usize);
 
-            self.serialize_u32(len)?;
+            self.serialize_usize(len)?;
         }
         Ok(self)
     }
