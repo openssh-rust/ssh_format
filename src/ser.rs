@@ -3,6 +3,10 @@ use std::convert::TryInto;
 
 use crate::{Error, Result, SerOutput};
 
+fn usize_to_u32(v: usize) -> Result<u32> {
+    v.try_into().map_err(|_| Error::TooLong)
+}
+
 #[derive(Clone, Debug)]
 pub struct Serializer<T: SerOutput = Vec<u8>> {
     pub output: T,
@@ -26,9 +30,7 @@ impl<T: SerOutput> Serializer<T> {
 
     /// * `len` - length of additional data included in the packet.
     pub fn create_header(&self, len: u32) -> Result<[u8; 4]> {
-        let len: u32 = (self.len + len as usize)
-            .try_into()
-            .map_err(|_| Error::TooLong)?;
+        let len: u32 = usize_to_u32(self.len + len as usize)?;
 
         Ok(len.to_be_bytes())
     }
@@ -51,7 +53,7 @@ impl<T: SerOutput> Serializer<T> {
     }
 
     fn serialize_usize(&mut self, v: usize) -> Result<()> {
-        ser::Serializer::serialize_u32(self, v.try_into().map_err(|_| Error::TooLong)?)
+        ser::Serializer::serialize_u32(self, usize_to_u32(v)?)
     }
 }
 
