@@ -10,7 +10,7 @@ pub trait SerOutput {
     fn reserve(&mut self, additional: usize);
 }
 
-impl<T: SerOutput> SerOutput for &mut T {
+impl<T: SerOutput + ?Sized> SerOutput for &mut T {
     fn extend_from_slice(&mut self, other: &[u8]) {
         (*self).extend_from_slice(other)
     }
