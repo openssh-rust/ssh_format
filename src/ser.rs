@@ -387,6 +387,17 @@ mod tests {
     }
 
     #[test]
+    fn test_str_with_null() {
+        let s = "\0Hello, world!";
+        let serialized = to_bytes(&s).unwrap();
+        let len: u32 = (serialized.len() - 4).try_into().unwrap();
+        assert_eq!(&serialized[..4], len.to_be_bytes());
+        assert_eq!(&serialized[4..8], ((s.len() - 1) as u32).to_be_bytes());
+
+        assert_eq!(&serialized[8..], &s.as_bytes()[1..]);
+    }
+
+    #[test]
     fn test_array() {
         let array = [0x00_u8, 0x01_u8, 0x10_u8, 0x78_u8];
         let slice: &[_] = &array;
