@@ -138,8 +138,12 @@ impl<'a, Container: SerOutput> ser::Serializer for &'a mut Serializer<Container>
 
         self.serialize_usize(len)?;
 
-        for byte in it {
-            self.serialize_u8(byte)?;
+        if len == v.len() {
+            self.extend_from_slice(v.as_bytes());
+        } else {
+            for byte in it {
+                self.serialize_u8(byte)?;
+            }
         }
 
         Ok(())
