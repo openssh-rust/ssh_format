@@ -127,23 +127,30 @@ impl<'a, Container: SerOutput> ser::Serializer for &'a mut Serializer<Container>
     }
 
     fn serialize_str(self, v: &str) -> Result<()> {
-        // Filter all null byte
-        let it = v.as_bytes().iter().copied().filter(|byte| *byte != b'\0');
+        fn is_null_byte(byte: &u8) -> bool {
+            *byte == b'\0'
+        }
 
-        // Count number of non-null byte
-        let len = it.clone().count();
+        let bytes = v.as_bytes();
+
+        let null_byte_counts = bytes.iter().copied().filter(is_null_byte).count();
+
+        let len = bytes.len() - null_byte_counts;
 
         // Reserve bytes
         self.reserve(4 + len);
 
         self.serialize_usize(len)?;
 
-        if len == v.len() {
+        if null_byte_counts == 0 {
             self.extend_from_slice(v.as_bytes());
         } else {
-            for byte in it {
-                self.serialize_u8(byte)?;
-            }
+            bytes
+                .split(is_null_byte)
+                .filter(|slice| !slice.is_empty())
+                .for_each(|slice| {
+                    self.extend_from_slice(slice);
+                });
         }
 
         Ok(())
