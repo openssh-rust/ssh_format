@@ -1,7 +1,7 @@
-use std::str::Utf8Error;
 use std::{
     error,
     fmt::{self, Display},
+    str::Utf8Error,
 };
 
 use serde::{de, ser};
