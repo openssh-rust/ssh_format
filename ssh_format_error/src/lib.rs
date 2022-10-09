@@ -1,5 +1,8 @@
-use std::fmt::{self, Display};
 use std::str::Utf8Error;
+use std::{
+    error,
+    fmt::{self, Display},
+};
 
 use serde::{de, ser};
 
@@ -47,4 +50,11 @@ impl Display for Error {
     }
 }
 
-impl std::error::Error for Error {}
+impl error::Error for Error {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        match self {
+            Error::InvalidStr(utf8_err) => Some(utf8_err),
+            _ => None,
+        }
+    }
+}
