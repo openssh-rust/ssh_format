@@ -1,6 +1,7 @@
 use std::{
     error,
     fmt::{self, Display},
+    io,
     str::Utf8Error,
 };
 
@@ -8,7 +9,7 @@ use serde::{de, ser};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Debug)]
 #[non_exhaustive]
 pub enum Error {
     Message(Box<str>),
@@ -22,6 +23,8 @@ pub enum Error {
     /// &str is a fat pointer, but &&str is a thin pointer.
     Unsupported(&'static &'static str),
     TooLong,
+
+    IoError(io::Error),
 }
 
 impl ser::Error for Error {
@@ -37,23 +40,27 @@ impl de::Error for Error {
 }
 
 impl Display for Error {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Error::Message(msg) => formatter.write_str(msg),
-            Error::Eof => formatter.write_str("EOF"),
-            Error::InvalidBoolEncoding => formatter.write_str("InvalidBoolEncoding"),
-            Error::InvalidChar => formatter.write_str("Invalid char"),
-            Error::InvalidStr(err) => formatter.write_fmt(format_args!("Invalid str: {:#?}", err)),
-            Error::Unsupported(s) => formatter.write_fmt(format_args!("Unsupported {}", s)),
-            Error::TooLong => formatter.write_str("Bytes must not be larger than u32::MAX"),
+            Error::Message(msg) => f.write_str(msg),
+            Error::Eof => f.write_str("EOF"),
+            Error::InvalidBoolEncoding => f.write_str("InvalidBoolEncoding"),
+            Error::InvalidChar => f.write_str("Invalid char"),
+            Error::InvalidStr(err) => f.write_fmt(format_args!("Invalid str: {:#?}", err)),
+            Error::Unsupported(s) => f.write_fmt(format_args!("Unsupported {}", s)),
+            Error::TooLong => f.write_str("Bytes must not be larger than u32::MAX"),
+            Error::IoError(io_error) => write!(f, "Io error: {}", io_error),
         }
     }
 }
 
 impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        use Error::*;
+
         match self {
-            Error::InvalidStr(utf8_err) => Some(utf8_err),
+            InvalidStr(utf8_err) => Some(utf8_err),
+            IoError(io_error) => Some(io_error),
             _ => None,
         }
     }
