@@ -46,8 +46,8 @@ impl Display for Error {
             Error::Eof => f.write_str("EOF"),
             Error::InvalidBoolEncoding => f.write_str("InvalidBoolEncoding"),
             Error::InvalidChar => f.write_str("Invalid char"),
-            Error::InvalidStr(err) => f.write_fmt(format_args!("Invalid str: {:#?}", err)),
-            Error::Unsupported(s) => f.write_fmt(format_args!("Unsupported {}", s)),
+            Error::InvalidStr(err) => write!(f, "Invalid str: {:#?}", err),
+            Error::Unsupported(s) => write!(f, "Unsupported {}", s),
             Error::TooLong => f.write_str("Bytes must not be larger than u32::MAX"),
             Error::IoError(io_error) => write!(f, "Io error: {}", io_error),
         }
