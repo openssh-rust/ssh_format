@@ -1,11 +1,15 @@
-use std::fmt::{self, Display};
-use std::str::Utf8Error;
+use std::{
+    error,
+    fmt::{self, Display},
+    str::Utf8Error,
+};
 
 use serde::{de, ser};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
+#[non_exhaustive]
 pub enum Error {
     Message(Box<str>),
     Eof,
@@ -46,4 +50,11 @@ impl Display for Error {
     }
 }
 
-impl std::error::Error for Error {}
+impl error::Error for Error {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        match self {
+            Error::InvalidStr(utf8_err) => Some(utf8_err),
+            _ => None,
+        }
+    }
+}
