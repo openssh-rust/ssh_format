@@ -74,3 +74,9 @@ impl From<io::Error> for Error {
         }
     }
 }
+
+impl From<Utf8Error> for Error {
+    fn from(utf8_err: Utf8Error) -> Self {
+        Error::InvalidStr(utf8_err)
+    }
+}
