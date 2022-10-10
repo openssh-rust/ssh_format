@@ -65,3 +65,12 @@ impl error::Error for Error {
         }
     }
 }
+
+impl From<io::Error> for Error {
+    fn from(io_error: io::Error) -> Self {
+        match io_error.kind() {
+            io::ErrorKind::UnexpectedEof => Error::Eof,
+            _ => Error::IoError(io_error),
+        }
+    }
+}
