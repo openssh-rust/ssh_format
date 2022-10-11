@@ -457,6 +457,7 @@ mod tests {
 
     use assert_matches::assert_matches;
     use generator::{done, Gn};
+    use itertools::Itertools;
     use serde::{de::DeserializeOwned, Serialize};
 
     use super::*;
@@ -554,6 +555,25 @@ mod tests {
             v2: 0x0100,
             v3: 0x1034,
             v4: 0x7812,
+        });
+    }
+
+    #[test]
+    fn test_struct2() {
+        #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+        struct S<'a> {
+            v1: u8,
+            v2: u16,
+            v3: u16,
+            v4: u16,
+            v5: Cow<'a, str>,
+        }
+        test_roundtrip(&S {
+            v1: 0x00,
+            v2: 0x0100,
+            v3: 0x1034,
+            v4: 0x7812,
+            v5: Cow::Owned((0..100).join(", ")),
         });
     }
 
