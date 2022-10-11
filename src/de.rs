@@ -458,7 +458,7 @@ mod tests {
     use assert_matches::assert_matches;
     use generator::{done, Gn};
     use itertools::Itertools;
-    use serde::{de::DeserializeOwned, Serialize};
+    use serde::{Deserialize, Serialize};
 
     use super::*;
     use crate::to_bytes;
@@ -485,8 +485,11 @@ mod tests {
     }
 
     /// First serialize value, then deserialize it.
-    fn test_roundtrip<T: Debug + Eq + Serialize + DeserializeOwned>(value: &T) {
-        let serialized = to_bytes(value).unwrap();
+    fn test_roundtrip<'de, T>(value: &T)
+    where
+        T: Debug + Eq + Serialize + Deserialize<'de>,
+    {
+        let serialized = to_bytes(value).unwrap().leak();
         // Ignore the size
         let serialized = &serialized[4..];
 
@@ -566,6 +569,7 @@ mod tests {
             v2: u16,
             v3: u16,
             v4: u16,
+            #[serde(borrow)]
             v5: Cow<'a, str>,
         }
         test_roundtrip(&S {
