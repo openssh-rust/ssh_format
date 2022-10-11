@@ -453,17 +453,57 @@ where
 /// Test deserialization
 #[cfg(test)]
 mod tests {
+    use std::fmt::Debug;
+
+    use assert_matches::assert_matches;
+    use generator::{done, Gn};
+    use serde::{de::DeserializeOwned, Serialize};
+
     use super::*;
     use crate::to_bytes;
-    use assert_matches::assert_matches;
-    use serde::{de::DeserializeOwned, Serialize};
-    use std::fmt::Debug;
+
+    /// Generate subslices, plus stuffing empty slices into the returned
+    /// iterator.
+    fn generate_subslices(mut bytes: &[u8], chunk_size: usize) -> impl Iterator<Item = &[u8]> {
+        assert_ne!(chunk_size, 0);
+
+        Gn::new_scoped(move |mut s| loop {
+            for _ in 0..8 {
+                // Stuffing empty slices
+                s.yield_(&bytes[..0]);
+            }
+
+            let n = bytes.len().min(chunk_size);
+            s.yield_(&bytes[..n]);
+            bytes = &bytes[n..];
+
+            if bytes.is_empty() {
+                done!();
+            }
+        })
+    }
 
     /// First serialize value, then deserialize it.
     fn test_roundtrip<T: Debug + Eq + Serialize + DeserializeOwned>(value: &T) {
         let serialized = to_bytes(value).unwrap();
         // Ignore the size
-        assert_eq!(from_bytes::<T>(&serialized[4..]).unwrap().0, *value);
+        let serialized = &serialized[4..];
+
+        // Test from_bytes
+        assert_eq!(from_bytes::<T>(serialized).unwrap().0, *value);
+
+        // Test cutting it into multiple small vectors
+        for chunk_size in 1..serialized.len() {
+            let mut deserializer =
+                Deserializer::new(generate_subslices(serialized, chunk_size).fuse());
+            let val = T::deserialize(&mut deserializer).unwrap();
+            assert_eq!(val, *value);
+
+            let (slice, mut iter) = deserializer.into_inner();
+
+            assert_eq!(slice, &[]);
+            assert_eq!(iter.next(), None);
+        }
     }
 
     #[test]
