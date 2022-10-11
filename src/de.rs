@@ -1,4 +1,4 @@
-use std::convert::TryInto;
+use std::{borrow::Cow, convert::TryInto, iter, str};
 
 use serde::de::{self, DeserializeSeed, IntoDeserializer, SeqAccess, VariantAccess, Visitor};
 use serde::Deserialize;
@@ -6,17 +6,27 @@ use serde::Deserialize;
 use crate::{Error, Result};
 
 #[derive(Copy, Clone, Debug)]
-pub struct Deserializer<'de> {
-    input: &'de [u8],
+pub struct Deserializer<'de, It> {
+    slice: &'de [u8],
+    iter: It,
 }
 
-impl<'de> Deserializer<'de> {
-    pub const fn from_bytes(input: &'de [u8]) -> Self {
-        Deserializer { input }
+impl<'de, It> Deserializer<'de, It> {
+    pub const fn new(iter: It) -> Self {
+        Self { iter, slice: &[] }
     }
 
-    pub const fn into_inner(self) -> &'de [u8] {
-        self.input
+    pub fn into_inner(self) -> (&'de [u8], It) {
+        (self.slice, self.iter)
+    }
+}
+
+impl<'de> Deserializer<'de, iter::Empty<&'de [u8]>> {
+    pub const fn from_bytes(slice: &'de [u8]) -> Self {
+        Self {
+            slice,
+            iter: iter::empty(),
+        }
     }
 }
 
@@ -53,48 +63,89 @@ where
 {
     let mut deserializer = Deserializer::from_bytes(s);
     let t = T::deserialize(&mut deserializer)?;
-    Ok((t, deserializer.input))
+    Ok((t, deserializer.slice))
 }
 
-impl<'de> Deserializer<'de> {
-    fn peek_byte(&mut self) -> Result<u8> {
-        self.input.iter().next().ok_or(Error::Eof).map(|byte| *byte)
+impl<'de, It> Deserializer<'de, It>
+where
+    It: iter::FusedIterator + Iterator<Item = &'de [u8]>,
+{
+    /// Extract the loop as a separate function so that `Self::update_slice`
+    /// can be trivally inlined.
+    fn update_slice_inner(&mut self) {
+        self.slice = self.iter.find(|slice| !slice.is_empty()).unwrap_or(&[]);
+    }
+
+    #[inline]
+    fn update_slice(&mut self) {
+        if self.slice.is_empty() {
+            self.update_slice_inner();
+        }
     }
 
     fn next_byte(&mut self) -> Result<u8> {
-        let ch = self.peek_byte()?;
-        self.input = &self.input[1..];
-        Ok(ch)
+        self.update_slice();
+
+        let byte = self.slice.first().copied().ok_or(Error::Eof)?;
+        self.slice = &self.slice[1..];
+
+        Ok(byte)
     }
 
+    fn fill_buffer(&mut self, mut buffer: &mut [u8]) -> Result<()> {
+        loop {
+            if buffer.is_empty() {
+                break Ok(());
+            }
+
+            self.update_slice();
+
+            if self.slice.is_empty() {
+                break Err(Error::Eof);
+            }
+
+            let n = self.slice.len().min(buffer.len());
+
+            buffer[..n].copy_from_slice(&self.slice[..n]);
+
+            self.slice = &self.slice[n..];
+            buffer = &mut buffer[n..];
+        }
+    }
+
+    /// * `SIZE` - must not be 0!
     fn next_bytes_const<const SIZE: usize>(&mut self) -> Result<[u8; SIZE]> {
-        if self.input.len() < SIZE {
-            Err(Error::Eof)
-        } else {
-            let bytes: [u8; SIZE] = self.input[..SIZE].try_into().map_err(|_| Error::Eof)?;
-            self.input = &self.input[SIZE..];
-            Ok(bytes)
-        }
-    }
+        assert_ne!(SIZE, 0);
 
-    fn next_bytes(&mut self, size: usize) -> Result<&'de [u8]> {
-        if self.input.len() < size {
-            Err(Error::Eof)
-        } else {
-            let bytes = &self.input[..size];
-            self.input = &self.input[size..];
-            Ok(bytes)
-        }
-    }
+        let mut bytes = [0_u8; SIZE];
+        self.fill_buffer(&mut bytes)?;
 
-    /// Parse &str and &[u8]
-    fn parse_bytes(&mut self) -> Result<&'de [u8]> {
-        let len = self.next_u32()? as usize;
-        self.next_bytes(len)
+        Ok(bytes)
     }
 
     fn next_u32(&mut self) -> Result<u32> {
         Ok(u32::from_be_bytes(self.next_bytes_const()?))
+    }
+
+    fn next_bytes(&mut self, size: usize) -> Result<Cow<'de, [u8]>> {
+        self.update_slice();
+
+        if self.slice.len() >= size {
+            let slice = &self.slice[..size];
+            self.slice = &self.slice[size..];
+
+            Ok(Cow::Borrowed(slice))
+        } else {
+            let mut bytes = vec![0_u8; size];
+            self.fill_buffer(&mut bytes)?;
+            Ok(Cow::Owned(bytes))
+        }
+    }
+
+    /// Parse &str and &[u8]
+    fn parse_bytes(&mut self) -> Result<Cow<'de, [u8]>> {
+        let len: usize = self.next_u32()?.try_into().map_err(|_| Error::TooLong)?;
+        self.next_bytes(len)
     }
 }
 
@@ -109,7 +160,10 @@ macro_rules! impl_for_deserialize_primitive {
     };
 }
 
-impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
+impl<'de, 'a, It> de::Deserializer<'de> for &'a mut Deserializer<'de, It>
+where
+    It: iter::FusedIterator + Iterator<Item = &'de [u8]>,
+{
     type Error = Error;
 
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
@@ -162,9 +216,9 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        match std::str::from_utf8(self.parse_bytes()?) {
-            Ok(s) => visitor.visit_borrowed_str(s),
-            Err(e) => Err(Error::InvalidStr(e)),
+        match self.parse_bytes()? {
+            Cow::Owned(owned_bytes) => visitor.visit_string(String::from_utf8(owned_bytes)?),
+            Cow::Borrowed(bytes) => visitor.visit_borrowed_str(str::from_utf8(bytes)?),
         }
     }
 
@@ -179,7 +233,10 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        visitor.visit_borrowed_bytes(self.parse_bytes()?)
+        match self.parse_bytes()? {
+            Cow::Owned(owned_bytes) => visitor.visit_byte_buf(owned_bytes),
+            Cow::Borrowed(bytes) => visitor.visit_borrowed_bytes(bytes),
+        }
     }
 
     fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value>
@@ -253,7 +310,10 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        impl<'a, 'de> serde::de::EnumAccess<'de> for &'a mut Deserializer<'de> {
+        impl<'a, 'de, It> serde::de::EnumAccess<'de> for &'a mut Deserializer<'de, It>
+        where
+            It: iter::FusedIterator + Iterator<Item = &'de [u8]>,
+        {
             type Error = Error;
             type Variant = Self;
 
@@ -329,7 +389,10 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     }
 }
 
-impl<'a, 'de> VariantAccess<'de> for &'a mut Deserializer<'de> {
+impl<'a, 'de, It> VariantAccess<'de> for &'a mut Deserializer<'de, It>
+where
+    It: iter::FusedIterator + Iterator<Item = &'de [u8]>,
+{
     type Error = Error;
 
     fn unit_variant(self) -> Result<()> {
@@ -358,12 +421,15 @@ impl<'a, 'de> VariantAccess<'de> for &'a mut Deserializer<'de> {
     }
 }
 
-struct Access<'a, 'de> {
-    deserializer: &'a mut Deserializer<'de>,
+struct Access<'a, 'de, It> {
+    deserializer: &'a mut Deserializer<'de, It>,
     len: usize,
 }
 
-impl<'a, 'de> SeqAccess<'de> for Access<'a, 'de> {
+impl<'a, 'de, It> SeqAccess<'de> for Access<'a, 'de, It>
+where
+    It: iter::FusedIterator + Iterator<Item = &'de [u8]>,
+{
     type Error = Error;
 
     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>>
@@ -388,7 +454,7 @@ impl<'a, 'de> SeqAccess<'de> for Access<'a, 'de> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::*;
+    use crate::to_bytes;
     use assert_matches::assert_matches;
     use serde::{de::DeserializeOwned, Serialize};
     use std::fmt::Debug;
