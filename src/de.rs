@@ -147,6 +147,12 @@ where
         let len: usize = self.next_u32()?.try_into().map_err(|_| Error::TooLong)?;
         self.next_bytes(len)
     }
+
+    /// Is there any remaining data.
+    pub fn has_remaining_data(&mut self) -> bool {
+        self.update_slice();
+        !self.slice.is_empty()
+    }
 }
 
 macro_rules! impl_for_deserialize_primitive {
