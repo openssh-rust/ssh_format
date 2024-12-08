@@ -166,6 +166,23 @@ macro_rules! impl_for_deserialize_primitive {
     };
 }
 
+impl<'a, 'de, It> serde::de::EnumAccess<'de> for &'a mut Deserializer<'de, It>
+where
+    It: iter::FusedIterator + Iterator<Item = &'de [u8]>,
+{
+    type Error = Error;
+    type Variant = Self;
+
+    fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant)>
+    where
+       V: de::DeserializeSeed<'de>,
+    {
+        let idx: u32 = self.next_u32()?;
+        let val: Result<_> = seed.deserialize(idx.into_deserializer());
+        Ok((val?, self))
+    }
+}
+
 impl<'de, 'a, It> de::Deserializer<'de> for &'a mut Deserializer<'de, It>
 where
     It: iter::FusedIterator + Iterator<Item = &'de [u8]>,
@@ -316,23 +333,6 @@ where
     where
         V: Visitor<'de>,
     {
-        impl<'a, 'de, It> serde::de::EnumAccess<'de> for &'a mut Deserializer<'de, It>
-        where
-            It: iter::FusedIterator + Iterator<Item = &'de [u8]>,
-        {
-            type Error = Error;
-            type Variant = Self;
-
-            fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant)>
-            where
-                V: de::DeserializeSeed<'de>,
-            {
-                let idx: u32 = self.next_u32()?;
-                let val: Result<_> = seed.deserialize(idx.into_deserializer());
-                Ok((val?, self))
-            }
-        }
-
         visitor.visit_enum(self)
     }
 
@@ -471,7 +471,7 @@ mod tests {
 
     /// Generate subslices, plus stuffing empty slices into the returned
     /// iterator.
-    fn generate_subslices(mut bytes: &[u8], chunk_size: usize) -> impl Iterator<Item = &[u8]> {
+    fn generate_subslices<'a>(mut bytes: &'a [u8], chunk_size: usize) -> impl Iterator<Item = &'a [u8]> {
         assert_ne!(chunk_size, 0);
 
         Gn::new_scoped(move |mut s| loop {
