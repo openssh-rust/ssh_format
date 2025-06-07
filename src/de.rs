@@ -484,7 +484,7 @@ mod tests {
             }
 
             let n = bytes.len().min(chunk_size);
-            s.yield_(&bytes[..n]);
+            s.yield_with(&bytes[..n]);
             bytes = &bytes[n..];
 
             if bytes.is_empty() {
