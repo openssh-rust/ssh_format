@@ -471,7 +471,7 @@ mod tests {
 
     /// Generate subslices, plus stuffing empty slices into the returned
     /// iterator.
-    fn generate_subslices(mut bytes: &[u8], chunk_size: usize) -> impl Iterator<Item = &[u8]> {
+    fn generate_subslices<'a>(mut bytes: &'a [u8], chunk_size: usize) -> impl Iterator<Item = &'a [u8]> {
         assert_ne!(chunk_size, 0);
 
         Gn::new_scoped(move |mut s| loop {
