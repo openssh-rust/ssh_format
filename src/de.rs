@@ -480,7 +480,7 @@ mod tests {
         Gn::new_scoped(move |mut s| loop {
             for _ in 0..8 {
                 // Stuffing empty slices
-                s.yield_(&bytes[..0]);
+                s.yield_with(&bytes[..0]);
             }
 
             let n = bytes.len().min(chunk_size);
